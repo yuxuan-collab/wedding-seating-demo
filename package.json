@@ -1,0 +1,36 @@
+{
+  "name": "wedding-seating-demo",
+  "version": "0.1.0",
+  "private": true,
+  "description": "A Taro-based wedding seating planner demo.",
+  "scripts": {
+    "dev:h5": "node --max-old-space-size=${NODE_HEAP_SIZE:-8192} ./node_modules/@tarojs/cli/bin/taro build --type h5 --watch",
+    "build:h5": "node --max-old-space-size=${NODE_HEAP_SIZE:-8192} ./node_modules/@tarojs/cli/bin/taro build --type h5",
+    "preview:h5": "python3 -m http.server 4173 -d dist",
+    "dev:weapp": "node --max-old-space-size=${NODE_HEAP_SIZE:-8192} ./node_modules/@tarojs/cli/bin/taro build --type weapp --watch",
+    "build:weapp": "node --max-old-space-size=${NODE_HEAP_SIZE:-8192} ./node_modules/@tarojs/cli/bin/taro build --type weapp"
+  },
+  "dependencies": {
+    "@tarojs/components": "4.2.0",
+    "@tarojs/react": "4.2.0",
+    "@tarojs/runtime": "4.2.0",
+    "@tarojs/shared": "4.2.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.25.2",
+    "@babel/plugin-proposal-decorators": "^7.25.9",
+    "@tarojs/cli": "4.2.0",
+    "@tarojs/plugin-framework-react": "4.2.0",
+    "@tarojs/plugin-platform-h5": "4.2.0",
+    "@tarojs/plugin-platform-weapp": "4.2.0",
+    "@tarojs/taro": "4.2.0",
+    "@tarojs/vite-runner": "4.2.0",
+    "@types/react": "^18.3.3",
+    "@types/react-dom": "^18.3.0",
+    "@vitejs/plugin-react": "^4.3.1",
+    "typescript": "^5.5.4",
+    "vite": "^5.4.1"
+  }
+}

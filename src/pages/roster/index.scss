@@ -1,0 +1,403 @@
+.roster-page {
+  padding: 16px;
+}
+
+.roster-topbar {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 14px 0;
+}
+
+.roster-title {
+  display: block;
+  font-size: 26px;
+  font-weight: 700;
+}
+
+.roster-subtitle {
+  display: block;
+  margin-top: 6px;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.roster-grid {
+  display: grid;
+  gap: 14px;
+}
+
+.panel {
+  padding: 16px;
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  background: var(--panel);
+  box-shadow: var(--shadow);
+}
+
+.panel__title {
+  display: block;
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.panel__hint {
+  display: block;
+  margin-top: 4px;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.field {
+  margin-top: 12px;
+}
+
+.field__label {
+  display: block;
+  margin-bottom: 6px;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.field__input,
+.field__textarea {
+  display: block;
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--panel-strong);
+  font-size: 14px;
+  line-height: 1.5;
+  overflow: hidden;
+}
+
+.field__textarea {
+  max-width: 100%;
+  min-height: 140px;
+}
+
+.section-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.counter-chip {
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: var(--primary-soft);
+  color: var(--primary);
+  font-size: 11px;
+}
+
+.composer-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.composer-actions--rules {
+  justify-content: flex-start;
+}
+
+.primary-compact,
+.secondary-compact,
+.mini-btn,
+.picker-chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0;
+  min-width: auto;
+  border-radius: 10px;
+  font-size: 12px;
+  line-height: 1.2;
+}
+
+.primary-compact,
+.secondary-compact {
+  padding: 10px 14px;
+}
+
+.primary-compact {
+  background: var(--primary);
+  color: #fff;
+}
+
+.primary-compact--wide,
+.secondary-compact--wide {
+  min-width: 164px;
+}
+
+.primary-compact--rule {
+  width: auto;
+  min-width: 132px;
+  padding: 8px 14px;
+}
+
+.secondary-compact {
+  background: #ece8f8;
+  color: var(--text);
+}
+
+.list-columns {
+  display: grid;
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.list-panel {
+  padding: 10px;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: rgba(248, 247, 255, 0.88);
+}
+
+.list-title {
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.list-count {
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.guest-table {
+  max-height: 380px;
+  margin-top: 10px;
+  overflow-y: auto;
+  border: 1px solid rgba(113, 90, 191, 0.1);
+  border-radius: 12px;
+  background: #fff;
+}
+
+.guest-table__head,
+.guest-table__row {
+  display: grid;
+  grid-template-columns: minmax(120px, 1.1fr) 70px 80px minmax(170px, 0.9fr);
+  align-items: center;
+  gap: 8px;
+  padding: 9px 10px;
+  border-bottom: 1px solid rgba(113, 90, 191, 0.08);
+  min-width: 520px;
+}
+
+.guest-table__head {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: #f7f5ff;
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.guest-table__row:last-child {
+  border-bottom: none;
+}
+
+.guest-table__row--waitlist {
+  background: #faf8ff;
+}
+
+.guest-meta {
+  min-width: 0;
+  flex: 1;
+}
+
+.guest-name {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.4;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.guest-desc {
+  display: block;
+  margin-top: 4px;
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.guest-actions {
+  display: flex;
+  flex-wrap: nowrap;
+  justify-content: flex-end;
+  gap: 6px;
+}
+
+.mini-btn {
+  padding: 5px 8px;
+  border: 1px solid var(--border);
+  background: #fff;
+  color: var(--text);
+  font-size: 10px;
+}
+
+.status-pill {
+  display: inline-flex;
+  width: fit-content;
+  padding: 4px 8px;
+  border-radius: 999px;
+  font-size: 10px;
+}
+
+.status-pill--confirmed {
+  background: #eaf8f0;
+  color: #257554;
+}
+
+.status-pill--waitlist {
+  background: var(--primary-soft);
+  color: var(--primary);
+}
+
+.mini-btn--primary {
+  background: var(--primary-soft);
+  color: var(--primary);
+  border-color: rgba(124, 92, 255, 0.16);
+}
+
+.mini-btn--danger {
+  background: #fff4f6;
+  color: var(--danger);
+  border-color: rgba(194, 82, 104, 0.18);
+}
+
+.selection-box {
+  margin-top: 12px;
+  padding: 10px 12px;
+  border: 1px dashed var(--border);
+  border-radius: 12px;
+  background: #fcfbff;
+}
+
+.selection-label {
+  display: block;
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.selection-value {
+  display: block;
+  margin-top: 4px;
+  font-size: 13px;
+}
+
+.picker-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.picker-chip {
+  padding: 8px 12px;
+  border: 1px solid var(--border);
+  background: #fff;
+  color: var(--text);
+}
+
+.picker-chip--active {
+  background: var(--primary-soft);
+  color: var(--primary);
+  border-color: rgba(124, 92, 255, 0.22);
+}
+
+.rule-board {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.rule-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: #faf8ff;
+  border: 1px solid rgba(113, 90, 191, 0.1);
+}
+
+.rule-info {
+  min-width: 0;
+}
+
+.rule-label {
+  display: block;
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.rule-members {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 6px;
+}
+
+.rule-member {
+  display: inline-flex;
+  padding: 5px 9px;
+  border: 1px solid rgba(124, 92, 255, 0.16);
+  border-radius: 999px;
+  background: #fff;
+  color: var(--text);
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+.rule-delete {
+  width: auto;
+  min-width: 56px;
+  padding: 6px 10px;
+}
+
+@media screen and (min-width: 1100px) {
+  .roster-grid {
+    grid-template-columns: minmax(320px, 0.95fr) minmax(0, 1.35fr);
+  }
+
+  .panel--rules {
+    grid-column: 1 / -1;
+  }
+
+  .list-columns {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media screen and (max-width: 760px) {
+  .guest-table__head {
+    display: none;
+  }
+
+  .guest-table__row {
+    grid-template-columns: 1fr;
+    align-items: flex-start;
+  }
+
+  .guest-actions {
+    justify-content: flex-start;
+    flex-wrap: wrap;
+  }
+
+  .rule-row {
+    grid-template-columns: 1fr;
+  }
+}

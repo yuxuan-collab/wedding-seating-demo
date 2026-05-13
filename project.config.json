@@ -1,0 +1,11 @@
+{
+  "miniprogramRoot": "dist",
+  "projectname": "wedding-seating-demo",
+  "description": "Wedding seating planner demo",
+  "appid": "touristappid",
+  "setting": {
+    "es6": true,
+    "minified": false
+  },
+  "compileType": "miniprogram"
+}

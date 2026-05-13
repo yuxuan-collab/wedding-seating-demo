@@ -1,0 +1,140 @@
+.home-page {
+  padding: 16px;
+}
+
+.home-shell {
+  display: grid;
+  gap: 18px;
+  align-items: center;
+  margin-top: 18px;
+  padding: 28px;
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.94), rgba(245, 242, 255, 0.92));
+  box-shadow: var(--shadow);
+}
+
+.home-kicker {
+  display: block;
+  color: var(--primary);
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.home-title {
+  display: block;
+  margin-top: 10px;
+  font-size: 34px;
+  font-weight: 800;
+  line-height: 1.15;
+}
+
+.home-copy {
+  display: block;
+  max-width: 560px;
+  margin-top: 12px;
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.7;
+}
+
+.home-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 18px;
+}
+
+.home-primary,
+.home-secondary {
+  margin: 0;
+  min-width: 132px;
+  padding: 11px 16px;
+  border-radius: 10px;
+  font-size: 13px;
+  line-height: 1.2;
+}
+
+.home-primary {
+  background: var(--primary);
+  color: #fff;
+}
+
+.home-secondary {
+  background: #ece8f8;
+  color: var(--text);
+}
+
+.home-metrics {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.metric-card {
+  min-height: 94px;
+  padding: 16px;
+  border: 1px solid rgba(124, 92, 255, 0.14);
+  border-radius: 14px;
+  background: #fff;
+}
+
+.metric-value {
+  display: block;
+  font-size: 28px;
+  font-weight: 800;
+}
+
+.metric-label {
+  display: block;
+  margin-top: 6px;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.home-panels {
+  display: grid;
+  gap: 14px;
+  margin-top: 14px;
+}
+
+.home-panel {
+  padding: 18px;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background: var(--panel);
+  box-shadow: var(--shadow);
+}
+
+.panel-label {
+  display: block;
+  color: var(--primary);
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.panel-title {
+  display: block;
+  margin-top: 8px;
+  font-size: 17px;
+  font-weight: 700;
+}
+
+.panel-copy {
+  display: block;
+  margin-top: 8px;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+@media screen and (min-width: 900px) {
+  .home-shell {
+    grid-template-columns: minmax(0, 1.2fr) minmax(320px, 0.8fr);
+  }
+
+  .home-panels {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
