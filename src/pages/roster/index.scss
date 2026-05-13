@@ -62,10 +62,28 @@
   font-size: 12px;
 }
 
+.field__label-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 6px;
+}
+
+.field__label-row .field__label {
+  margin-bottom: 0;
+}
+
+.field__tip {
+  color: var(--muted);
+  font-size: 11px;
+}
+
 .field__input,
 .field__textarea {
   display: block;
   width: 100%;
+  max-width: 100%;
   padding: 10px 12px;
   border: 1px solid var(--border);
   border-radius: 12px;
@@ -77,7 +95,12 @@
 
 .field__textarea {
   max-width: 100%;
-  min-height: 140px;
+  min-height: 112px;
+}
+
+.field__textarea textarea {
+  width: 100%;
+  max-width: 100%;
 }
 
 .section-row {
@@ -173,6 +196,7 @@
   max-height: 380px;
   margin-top: 10px;
   overflow-y: auto;
+  overflow-x: hidden;
   border: 1px solid rgba(113, 90, 191, 0.1);
   border-radius: 12px;
   background: #fff;
@@ -181,22 +205,27 @@
 .guest-table__head,
 .guest-table__row {
   display: grid;
-  grid-template-columns: minmax(120px, 1.1fr) 70px 80px minmax(170px, 0.9fr);
+  grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
   gap: 8px;
   padding: 9px 10px;
   border-bottom: 1px solid rgba(113, 90, 191, 0.08);
-  min-width: 520px;
 }
 
 .guest-table__head {
   position: sticky;
   top: 0;
   z-index: 1;
+  grid-template-columns: minmax(0, 1fr) auto;
   background: #f7f5ff;
   color: var(--muted);
   font-size: 11px;
   font-weight: 700;
+}
+
+.guest-table__head text:nth-child(2),
+.guest-table__head text:nth-child(3) {
+  display: none;
 }
 
 .guest-table__row:last-child {
@@ -207,9 +236,8 @@
   background: #faf8ff;
 }
 
-.guest-meta {
+.guest-main {
   min-width: 0;
-  flex: 1;
 }
 
 .guest-name {
@@ -223,9 +251,15 @@
   white-space: nowrap;
 }
 
+.guest-badges {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 5px;
+}
+
 .guest-desc {
-  display: block;
-  margin-top: 4px;
+  display: inline-flex;
   color: var(--muted);
   font-size: 11px;
 }
@@ -235,6 +269,7 @@
   flex-wrap: nowrap;
   justify-content: flex-end;
   gap: 6px;
+  width: max-content;
 }
 
 .mini-btn {
@@ -383,6 +418,12 @@
 }
 
 @media screen and (max-width: 760px) {
+  .field__label-row {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 4px;
+  }
+
   .guest-table__head {
     display: none;
   }

@@ -106,6 +106,7 @@ export default function RosterPage() {
     if (!guest) return
     setEditingGuestId(guest.id)
     setGuestDraftText(guest.name)
+    Taro.pageScrollTo({ scrollTop: 0, duration: 220 })
   }
 
   const cancelEdit = () => {
@@ -232,12 +233,15 @@ export default function RosterPage() {
             </View>
           ) : (
             <View className='field'>
-              <Text className='field__label'>批量输入宾客姓名</Text>
+              <View className='field__label-row'>
+                <Text className='field__label'>批量输入宾客姓名</Text>
+                <Text className='field__tip'>示例：刘珈 / 张睿婧 / 罗宇峰，郭文卓</Text>
+              </View>
               <Textarea
                 className='field__textarea'
                 value={guestDraftText}
                 maxlength={6000}
-                placeholder={'示例：\n刘珈\n张睿婧\n罗宇峰，郭文卓'}
+                placeholder='粘贴名单，支持换行或逗号分隔'
                 onInput={(event) => setGuestDraftText(readValue(event))}
                 onChange={(event) => setGuestDraftText(readValue(event))}
               />
@@ -287,9 +291,13 @@ export default function RosterPage() {
                 </View>
                 {filteredConfirmedGuests.map((guest) => (
                   <View key={guest.id} className='guest-table__row'>
-                    <Text className='guest-name'>{guest.name}</Text>
-                    <Text className='status-pill status-pill--confirmed'>正式</Text>
-                    <Text className='guest-desc'>朋友</Text>
+                    <View className='guest-main'>
+                      <Text className='guest-name'>{guest.name}</Text>
+                      <View className='guest-badges'>
+                        <Text className='status-pill status-pill--confirmed'>正式</Text>
+                        <Text className='guest-desc'>朋友</Text>
+                      </View>
+                    </View>
                     <View className='guest-actions'>
                       <Button className='mini-btn' onClick={() => startEditGuest(guest.id)}>
                         编辑
@@ -320,9 +328,13 @@ export default function RosterPage() {
                 </View>
                 {filteredWaitlistGuests.map((guest) => (
                   <View key={guest.id} className='guest-table__row guest-table__row--waitlist'>
-                    <Text className='guest-name'>{guest.name}</Text>
-                    <Text className='status-pill status-pill--waitlist'>候补</Text>
-                    <Text className='guest-desc'>待确认</Text>
+                    <View className='guest-main'>
+                      <Text className='guest-name'>{guest.name}</Text>
+                      <View className='guest-badges'>
+                        <Text className='status-pill status-pill--waitlist'>候补</Text>
+                        <Text className='guest-desc'>待确认</Text>
+                      </View>
+                    </View>
                     <View className='guest-actions'>
                       <Button className='mini-btn mini-btn--primary' onClick={() => restoreGuestFromWaitlist(guest.id)}>
                         转正式
