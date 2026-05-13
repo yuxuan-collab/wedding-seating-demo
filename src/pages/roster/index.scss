@@ -205,10 +205,8 @@
 .guest-table__head,
 .guest-table__row {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  align-items: center;
   gap: 8px;
-  padding: 9px 10px;
+  padding: 10px;
   border-bottom: 1px solid rgba(113, 90, 191, 0.08);
 }
 
@@ -216,7 +214,7 @@
   position: sticky;
   top: 0;
   z-index: 1;
-  grid-template-columns: minmax(0, 1fr) auto;
+  display: none;
   background: #f7f5ff;
   color: var(--muted);
   font-size: 11px;
@@ -237,6 +235,10 @@
 }
 
 .guest-main {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
   min-width: 0;
 }
 
@@ -254,8 +256,8 @@
 .guest-badges {
   display: flex;
   align-items: center;
+  flex-shrink: 0;
   gap: 6px;
-  margin-top: 5px;
 }
 
 .guest-desc {
@@ -267,17 +269,19 @@
 .guest-actions {
   display: flex;
   flex-wrap: nowrap;
-  justify-content: flex-end;
-  gap: 6px;
-  width: max-content;
+  gap: 5px;
+  min-width: 0;
+  width: 100%;
 }
 
 .mini-btn {
-  padding: 5px 8px;
+  flex: 1;
+  padding: 6px 7px;
   border: 1px solid var(--border);
   background: #fff;
   color: var(--text);
   font-size: 10px;
+  white-space: nowrap;
 }
 
 .status-pill {
@@ -424,17 +428,7 @@
     gap: 4px;
   }
 
-  .guest-table__head {
-    display: none;
-  }
-
-  .guest-table__row {
-    grid-template-columns: 1fr;
-    align-items: flex-start;
-  }
-
   .guest-actions {
-    justify-content: flex-start;
     flex-wrap: wrap;
   }
 
