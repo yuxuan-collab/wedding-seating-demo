@@ -1,11 +1,4 @@
-export type GuestGroup =
-  | '男方亲友'
-  | '女方亲友'
-  | '同事'
-  | '同学'
-  | '长辈'
-  | '朋友'
-  | '其他'
+export type GuestGroup = string
 
 export interface Table {
   id: string
@@ -34,6 +27,7 @@ export interface SeatingResult {
 export interface SavedPlan {
   tables: Table[]
   guests: Guest[]
+  groupOptions: GuestGroup[]
   rules: Rule[]
   seating: SeatingResult
 }

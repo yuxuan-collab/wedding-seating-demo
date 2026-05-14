@@ -102,6 +102,22 @@
   overflow: hidden;
 }
 
+.field__input {
+  height: 48px;
+  padding-top: 0;
+  padding-bottom: 0;
+}
+
+.field__input input {
+  height: 48px;
+  line-height: 48px;
+  font-size: 14px;
+}
+
+.field__input--small {
+  flex: 1;
+}
+
 .field__textarea {
   max-width: 100%;
   min-height: 112px;
@@ -375,6 +391,16 @@
   gap: 6px;
 }
 
+.group-option {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.group-option--active {
+  filter: saturate(1.05);
+}
+
 .group-chip {
   padding: 6px 10px;
   border: 1px solid var(--border);
@@ -387,6 +413,29 @@
   background: var(--primary-soft);
   color: var(--primary);
   border-color: rgba(124, 92, 255, 0.22);
+}
+
+.group-remove {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  min-width: 22px;
+  margin: 0;
+  border-radius: 999px;
+  border: 1px solid rgba(194, 82, 104, 0.18);
+  background: #fff4f6;
+  color: var(--danger);
+  font-size: 10px;
+  line-height: 1;
+}
+
+.group-add {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 10px;
 }
 
 .picker-chip--active {
@@ -478,6 +527,11 @@
 
   .guest-actions {
     flex-wrap: wrap;
+  }
+
+  .group-add {
+    flex-direction: column;
+    align-items: stretch;
   }
 
   .rule-row {

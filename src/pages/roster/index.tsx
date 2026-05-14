@@ -2,11 +2,9 @@ import { useEffect, useMemo, useState } from 'react'
 import { Button, Input, Text, Textarea, View } from '@tarojs/components'
 import Taro from '@tarojs/taro'
 import { TopNav } from '../../components/top-nav'
-import { getWaitlistGuests, loadPlan, sanitizeRules, savePlan } from '../../utils/plan'
+import { defaultGuestGroups, getWaitlistGuests, loadPlan, sanitizeRules, savePlan } from '../../utils/plan'
 import type { Guest, GuestGroup, SavedPlan } from '../../types/seating'
 import './index.scss'
-
-const guestGroupOptions: GuestGroup[] = ['朋友', '同事', '同学', '男方亲友', '女方亲友', '长辈', '其他']
 
 function readValue(event: { detail?: { value?: string } }) {
   return event.detail?.value ?? ''
@@ -19,13 +17,16 @@ function getGuestName(guests: Guest[], guestId: string) {
 export default function RosterPage() {
   const [plan, setPlan] = useState<SavedPlan>(() => loadPlan())
   const [guestDraftText, setGuestDraftText] = useState('')
-  const [guestDraftGroup, setGuestDraftGroup] = useState<GuestGroup>('朋友')
+  const [guestDraftGroup, setGuestDraftGroup] = useState<GuestGroup>(defaultGuestGroups[0])
+  const [customGroupDraft, setCustomGroupDraft] = useState('')
   const [editingGuestId, setEditingGuestId] = useState<string | null>(null)
   const [searchText, setSearchText] = useState('')
   const [selectedMustGuestIds, setSelectedMustGuestIds] = useState<string[]>([])
 
   useEffect(() => {
-    setPlan(loadPlan())
+    const nextPlan = loadPlan()
+    setPlan(nextPlan)
+    setGuestDraftGroup(nextPlan.groupOptions[0] ?? defaultGuestGroups[0])
   }, [])
 
   const confirmedGuests = useMemo(
@@ -71,6 +72,7 @@ export default function RosterPage() {
       })
       setEditingGuestId(null)
       setGuestDraftText('')
+      setGuestDraftGroup(plan.groupOptions[0] ?? defaultGuestGroups[0])
       Taro.showToast({ title: '已更新宾客', icon: 'success' })
       return
     }
@@ -111,13 +113,54 @@ export default function RosterPage() {
     setEditingGuestId(guest.id)
     setGuestDraftText(guest.name)
     setGuestDraftGroup(guest.group)
-    Taro.pageScrollTo({ scrollTop: 0, duration: 220 })
+    setTimeout(() => {
+      Taro.pageScrollTo({ selector: '.edit-anchor', duration: 220, offsetTop: 12 })
+    }, 60)
   }
 
   const cancelEdit = () => {
     setEditingGuestId(null)
     setGuestDraftText('')
-    setGuestDraftGroup('朋友')
+    setGuestDraftGroup(plan.groupOptions[0] ?? defaultGuestGroups[0])
+  }
+
+  const addCustomGroup = () => {
+    const nextGroup = customGroupDraft.trim()
+    if (!nextGroup) {
+      Taro.showToast({ title: '请输入类型名称', icon: 'none' })
+      return
+    }
+
+    if (plan.groupOptions.includes(nextGroup)) {
+      setGuestDraftGroup(nextGroup)
+      setCustomGroupDraft('')
+      Taro.showToast({ title: '这个类型已经存在', icon: 'none' })
+      return
+    }
+
+    persistPlan({
+      ...plan,
+      groupOptions: [...plan.groupOptions, nextGroup]
+    })
+    setGuestDraftGroup(nextGroup)
+    setCustomGroupDraft('')
+  }
+
+  const removeGroupOption = (group: GuestGroup) => {
+    if (plan.groupOptions.length <= 1) {
+      Taro.showToast({ title: '至少保留 1 个宾客类型', icon: 'none' })
+      return
+    }
+
+    const nextOptions = plan.groupOptions.filter((item) => item !== group)
+    persistPlan({
+      ...plan,
+      groupOptions: nextOptions
+    })
+
+    if (guestDraftGroup === group) {
+      setGuestDraftGroup(nextOptions[0] ?? defaultGuestGroups[0])
+    }
   }
 
   const deleteGuest = (guestId: string) => {
@@ -227,7 +270,7 @@ export default function RosterPage() {
           <Text className='panel__title'>批量录入</Text>
           <Text className='panel__hint'>支持换行、逗号或分号。默认先加入正式名单。</Text>
           {editingGuestId ? (
-            <View className='field'>
+            <View className='field edit-anchor'>
               <Text className='field__label'>编辑宾客</Text>
               <Input
                 className='field__input'
@@ -257,15 +300,30 @@ export default function RosterPage() {
           <View className='field'>
             <Text className='field__label'>{editingGuestId ? '宾客类型' : '默认类型'}</Text>
             <View className='group-picker'>
-              {guestGroupOptions.map((group) => (
-                <Button
-                  key={group}
-                  className={`group-chip ${guestDraftGroup === group ? 'group-chip--active' : ''}`}
-                  onClick={() => setGuestDraftGroup(group)}
-                >
-                  {group}
-                </Button>
+              {plan.groupOptions.map((group) => (
+                <View key={group} className={`group-option ${guestDraftGroup === group ? 'group-option--active' : ''}`}>
+                  <Button
+                    className={`group-chip ${guestDraftGroup === group ? 'group-chip--active' : ''}`}
+                    onClick={() => setGuestDraftGroup(group)}
+                  >
+                    {group}
+                  </Button>
+                  <Button className='group-remove' onClick={() => removeGroupOption(group)}>
+                    x
+                  </Button>
+                </View>
               ))}
+            </View>
+            <View className='group-add'>
+              <Input
+                className='field__input field__input--small'
+                value={customGroupDraft}
+                placeholder='新增自定义类型，如：摄影师、主持人'
+                onInput={(event) => setCustomGroupDraft(readValue(event))}
+              />
+              <Button className='secondary-compact' onClick={addCustomGroup}>
+                新增类型
+              </Button>
             </View>
           </View>
 
