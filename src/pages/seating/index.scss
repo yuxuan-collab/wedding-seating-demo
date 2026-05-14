@@ -26,7 +26,7 @@
 
 .seating-grid {
   display: grid;
-  gap: 14px;
+  gap: 12px;
 }
 
 .panel {
@@ -133,57 +133,6 @@
   font-weight: 700;
 }
 
-.selection-box {
-  margin-top: 12px;
-  padding: 10px 12px;
-  border: 1px dashed var(--border);
-  border-radius: 12px;
-  background: #fcfbff;
-}
-
-.selection-label {
-  display: block;
-  color: var(--muted);
-  font-size: 11px;
-}
-
-.selection-value {
-  display: block;
-  margin-top: 4px;
-  font-size: 13px;
-}
-
-.control-section {
-  margin-top: 14px;
-}
-
-.control-title {
-  display: block;
-  font-size: 12px;
-  font-weight: 700;
-}
-
-.chip-grid {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin-top: 10px;
-}
-
-.picker-chip {
-  padding: 8px 12px;
-  border: 1px solid var(--border);
-  border-radius: 999px;
-  background: #fff;
-  color: var(--text);
-}
-
-.picker-chip--active {
-  background: var(--primary-soft);
-  color: var(--primary);
-  border-color: rgba(124, 92, 255, 0.22);
-}
-
 .warning-box {
   display: flex;
   flex-direction: column;
@@ -205,9 +154,16 @@
   margin-top: 12px;
 }
 
+.result-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
 .table-card {
-  min-height: 150px;
-  padding: 10px;
+  min-height: 318px;
+  padding: 9px;
   border: 1px solid rgba(113, 90, 191, 0.14);
   border-radius: 12px;
   background: linear-gradient(180deg, #fcfbff, #ffffff);
@@ -232,24 +188,28 @@
 }
 
 .seat-list {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
+  display: grid;
+  gap: 4px;
   margin-top: 8px;
-  align-content: flex-start;
-  min-height: 88px;
-  max-height: 205px;
-  overflow-y: auto;
+  align-content: start;
+  min-height: 264px;
 }
 
 .seat-chip {
-  padding: 5px 8px;
-  border-radius: 7px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 23px;
+  padding: 0 6px;
+  border-radius: 6px;
   background: #fff;
   border: 1px solid var(--border);
   color: var(--text);
-  font-size: 11px;
+  font-size: 10px;
   line-height: 1.2;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
   box-shadow: 0 4px 12px rgba(75, 59, 138, 0.04);
 }
 
@@ -262,12 +222,13 @@
 
 .drop-target {
   width: 100%;
-  padding: 7px 8px;
+  min-height: 28px;
+  padding: 0 8px;
   border: 1px dashed rgba(124, 92, 255, 0.35);
   border-radius: 8px;
   background: rgba(124, 92, 255, 0.08);
   color: var(--primary);
-  font-size: 11px;
+  font-size: 10px;
 }
 
 @media screen and (min-width: 900px) {
@@ -276,11 +237,7 @@
   }
 
   .seating-grid {
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-  }
-
-  .panel--result {
-    grid-column: 1 / -1;
+    grid-template-columns: 1fr;
   }
 }
 

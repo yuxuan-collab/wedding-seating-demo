@@ -16,7 +16,6 @@ export default function SeatingPage() {
   const [tableCount, setTableCount] = useState(String(loadPlan().tables.length))
   const [seatsPerTable, setSeatsPerTable] = useState(String(loadPlan().tables[0]?.capacity ?? 10))
   const [selectedGuestId, setSelectedGuestId] = useState<string | null>(null)
-  const [selectedSwapGuestId, setSelectedSwapGuestId] = useState<string | null>(null)
 
   useEffect(() => {
     const nextPlan = loadPlan()
@@ -44,7 +43,6 @@ export default function SeatingPage() {
       tables: createTables(nextTableCount, nextSeatsPerTable)
     })
     setSelectedGuestId(null)
-    setSelectedSwapGuestId(null)
   }
 
   const regenerate = () => {
@@ -81,16 +79,15 @@ export default function SeatingPage() {
 
     setPlan(replaceSeating(plan, nextSeating))
     setSelectedGuestId(null)
-    setSelectedSwapGuestId(null)
   }
 
-  const swapGuests = () => {
-    if (!selectedGuestId || !selectedSwapGuestId) return
+  const swapSelectedWith = (targetGuestId: string) => {
+    if (!selectedGuestId || selectedGuestId === targetGuestId) return
 
     const leftGroup = getMustSeatGroup(selectedGuestId, activeRules)
-    const rightGroup = getMustSeatGroup(selectedSwapGuestId, activeRules)
+    const rightGroup = getMustSeatGroup(targetGuestId, activeRules)
     const leftTableId = findGuestTableId(plan.seating.tables, selectedGuestId)
-    const rightTableId = findGuestTableId(plan.seating.tables, selectedSwapGuestId)
+    const rightTableId = findGuestTableId(plan.seating.tables, targetGuestId)
     if (!leftTableId || !rightTableId || leftTableId === rightTableId) return
 
     const leftTable = plan.tables.find((table) => table.id === leftTableId)
@@ -118,13 +115,9 @@ export default function SeatingPage() {
       })
     )
     setSelectedGuestId(null)
-    setSelectedSwapGuestId(null)
   }
 
   const selectedTableId = selectedGuestId ? findGuestTableId(plan.seating.tables, selectedGuestId) : null
-  const swapCandidates = selectedGuestId
-    ? confirmedGuests.filter((guest) => guest.id !== selectedGuestId && findGuestTableId(plan.seating.tables, guest.id) !== selectedTableId)
-    : []
 
   return (
     <View className='seating-page'>
@@ -133,7 +126,7 @@ export default function SeatingPage() {
       <View className='seating-topbar'>
         <View>
           <Text className='seating-title'>排座页</Text>
-          <Text className='seating-subtitle'>这里专门做桌位配置、自动生成和手动移动，不再和名单挤在一起。</Text>
+          <Text className='seating-subtitle'>这里专门做桌位配置、自动生成和桌面看板调整。</Text>
         </View>
         <Button className='primary-compact' onClick={() => Taro.redirectTo({ url: '/pages/roster/index' })}>
           回名单页
@@ -188,66 +181,18 @@ export default function SeatingPage() {
           </View>
         </View>
 
-        <View className='panel panel--controls'>
-          <Text className='panel__title'>手动移动</Text>
-          <Text className='panel__hint'>先点击下方桌位中的宾客，再在这里选择目标桌或交换对象。</Text>
-
-          <View className='selection-box'>
-            <Text className='selection-label'>当前选中</Text>
-            <Text className='selection-value'>
-              {selectedGuestId ? getGuestName(confirmedGuests, selectedGuestId) : '暂未选择'}
-            </Text>
-          </View>
-
-          {selectedGuestId ? (
-            <>
-              <View className='control-section'>
-                <Text className='control-title'>移动到目标桌</Text>
-                <View className='chip-grid'>
-                  {plan.tables
-                    .filter((table) => table.id !== selectedTableId)
-                    .map((table) => (
-                      <Button key={table.id} className='picker-chip' onClick={() => moveSelectedGroup(table.id)}>
-                        {table.name}
-                      </Button>
-                    ))}
-                </View>
-              </View>
-
-              <View className='control-section'>
-                <Text className='control-title'>交换对象</Text>
-                <View className='chip-grid'>
-                  {swapCandidates.map((guest) => (
-                    <Button
-                      key={guest.id}
-                      className={`picker-chip ${selectedSwapGuestId === guest.id ? 'picker-chip--active' : ''}`}
-                      onClick={() => setSelectedSwapGuestId((currentId) => (currentId === guest.id ? null : guest.id))}
-                    >
-                      {guest.name}
-                    </Button>
-                  ))}
-                </View>
-                <View className='toolbar'>
-                  <Button className='secondary-compact' onClick={swapGuests} disabled={!selectedSwapGuestId}>
-                    确认交换
-                  </Button>
-                  <Button
-                    className='secondary-compact'
-                    onClick={() => {
-                      setSelectedGuestId(null)
-                      setSelectedSwapGuestId(null)
-                    }}
-                  >
-                    清空选择
-                  </Button>
-                </View>
-              </View>
-            </>
-          ) : null}
-        </View>
-
         <View className='panel panel--result'>
-          <Text className='panel__title'>桌位结果</Text>
+          <View className='result-head'>
+            <View>
+              <Text className='panel__title'>桌位结果</Text>
+              <Text className='panel__hint'>点击宾客选中；点其他桌“移入此桌”移动，或点另一位宾客交换。</Text>
+            </View>
+            {selectedGuestId ? (
+              <Button className='secondary-compact' onClick={() => setSelectedGuestId(null)}>
+                清空选择
+              </Button>
+            ) : null}
+          </View>
           {plan.seating.warnings.length > 0 ? (
             <View className='warning-box'>
               {plan.seating.warnings.map((warning) => (
@@ -274,8 +219,12 @@ export default function SeatingPage() {
                       key={guestId}
                       className={`seat-chip ${selectedGuestId === guestId ? 'seat-chip--active' : ''}`}
                       onClick={() => {
-                        setSelectedSwapGuestId(null)
-                        setSelectedGuestId((currentId) => (currentId === guestId ? null : guestId))
+                        if (!selectedGuestId || selectedGuestId === guestId) {
+                          setSelectedGuestId((currentId) => (currentId === guestId ? null : guestId))
+                          return
+                        }
+
+                        swapSelectedWith(guestId)
                       }}
                     >
                       {getGuestName(confirmedGuests, guestId)}
