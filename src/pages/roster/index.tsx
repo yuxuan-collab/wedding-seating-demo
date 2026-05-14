@@ -3,8 +3,10 @@ import { Button, Input, Text, Textarea, View } from '@tarojs/components'
 import Taro from '@tarojs/taro'
 import { TopNav } from '../../components/top-nav'
 import { getWaitlistGuests, loadPlan, sanitizeRules, savePlan } from '../../utils/plan'
-import type { Guest, SavedPlan } from '../../types/seating'
+import type { Guest, GuestGroup, SavedPlan } from '../../types/seating'
 import './index.scss'
+
+const guestGroupOptions: GuestGroup[] = ['朋友', '同事', '同学', '男方亲友', '女方亲友', '长辈', '其他']
 
 function readValue(event: { detail?: { value?: string } }) {
   return event.detail?.value ?? ''
@@ -17,6 +19,7 @@ function getGuestName(guests: Guest[], guestId: string) {
 export default function RosterPage() {
   const [plan, setPlan] = useState<SavedPlan>(() => loadPlan())
   const [guestDraftText, setGuestDraftText] = useState('')
+  const [guestDraftGroup, setGuestDraftGroup] = useState<GuestGroup>('朋友')
   const [editingGuestId, setEditingGuestId] = useState<string | null>(null)
   const [searchText, setSearchText] = useState('')
   const [selectedMustGuestIds, setSelectedMustGuestIds] = useState<string[]>([])
@@ -60,7 +63,8 @@ export default function RosterPage() {
           guest.id === editingGuestId
             ? {
                 ...guest,
-                name: trimmedName
+                name: trimmedName,
+                group: guestDraftGroup
               }
             : guest
         )
@@ -92,7 +96,7 @@ export default function RosterPage() {
         ...uniqueNames.map((name, index) => ({
           id: `g${Date.now()}-${index}`,
           name,
-          group: '朋友',
+          group: guestDraftGroup,
           status: 'confirmed' as const
         }))
       ]
@@ -106,12 +110,14 @@ export default function RosterPage() {
     if (!guest) return
     setEditingGuestId(guest.id)
     setGuestDraftText(guest.name)
+    setGuestDraftGroup(guest.group)
     Taro.pageScrollTo({ scrollTop: 0, duration: 220 })
   }
 
   const cancelEdit = () => {
     setEditingGuestId(null)
     setGuestDraftText('')
+    setGuestDraftGroup('朋友')
   }
 
   const deleteGuest = (guestId: string) => {
@@ -248,6 +254,21 @@ export default function RosterPage() {
             </View>
           )}
 
+          <View className='field'>
+            <Text className='field__label'>{editingGuestId ? '宾客类型' : '默认类型'}</Text>
+            <View className='group-picker'>
+              {guestGroupOptions.map((group) => (
+                <Button
+                  key={group}
+                  className={`group-chip ${guestDraftGroup === group ? 'group-chip--active' : ''}`}
+                  onClick={() => setGuestDraftGroup(group)}
+                >
+                  {group}
+                </Button>
+              ))}
+            </View>
+          </View>
+
           <View className='composer-actions'>
             <Button className='primary-compact primary-compact--wide' onClick={upsertGuests}>
               {editingGuestId ? '保存宾客' : '批量加入名单'}
@@ -295,7 +316,7 @@ export default function RosterPage() {
                       <Text className='guest-name'>{guest.name}</Text>
                       <View className='guest-badges'>
                         <Text className='status-pill status-pill--confirmed'>正式</Text>
-                        <Text className='guest-desc'>朋友</Text>
+                        <Text className='guest-desc'>{guest.group}</Text>
                       </View>
                     </View>
                     <View className='guest-actions'>
@@ -332,7 +353,7 @@ export default function RosterPage() {
                       <Text className='guest-name'>{guest.name}</Text>
                       <View className='guest-badges'>
                         <Text className='status-pill status-pill--waitlist'>候补</Text>
-                        <Text className='guest-desc'>待确认</Text>
+                        <Text className='guest-desc'>{guest.group}</Text>
                       </View>
                     </View>
                     <View className='guest-actions'>

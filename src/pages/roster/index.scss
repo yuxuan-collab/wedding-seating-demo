@@ -132,7 +132,8 @@
 .primary-compact,
 .secondary-compact,
 .mini-btn,
-.picker-chip {
+.picker-chip,
+.group-chip {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -346,6 +347,26 @@
   border: 1px solid var(--border);
   background: #fff;
   color: var(--text);
+}
+
+.group-picker {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.group-chip {
+  padding: 6px 10px;
+  border: 1px solid var(--border);
+  background: #fff;
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.group-chip--active {
+  background: var(--primary-soft);
+  color: var(--primary);
+  border-color: rgba(124, 92, 255, 0.22);
 }
 
 .picker-chip--active {
