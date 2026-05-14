@@ -375,13 +375,15 @@ export default function RosterPage() {
         </View>
 
         <View className='panel panel--rules'>
-          <View className='section-row'>
-            <Text className='panel__title'>同桌要求</Text>
+          <View className='rules-head'>
+            <View>
+              <Text className='panel__title panel__title--compact'>同桌要求</Text>
+              <Text className='panel__hint panel__hint--inline'>从正式名单里点选宾客，建立必须同桌分组。</Text>
+            </View>
             <Button className='secondary-compact' onClick={() => setSelectedMustGuestIds([])}>
               清空当前选择
             </Button>
           </View>
-          <Text className='panel__hint'>从正式名单里点选宾客，建立必须同桌分组。</Text>
 
           <View className='selection-box'>
             <Text className='selection-label'>当前已选</Text>
