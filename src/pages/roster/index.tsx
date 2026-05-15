@@ -297,8 +297,16 @@ export default function RosterPage() {
             </View>
           )}
 
+          {!editingGuestId ? (
+            <View className='composer-actions composer-actions--primary'>
+              <Button className='primary-compact primary-compact--wide' onClick={upsertGuests}>
+                批量加入名单
+              </Button>
+            </View>
+          ) : null}
+
           <View className='field'>
-            <Text className='field__label'>{editingGuestId ? '宾客类型' : '默认类型'}</Text>
+            <Text className='field__label'>{editingGuestId ? '宾客类型' : '默认类型管理'}</Text>
             <View className='group-picker'>
               {plan.groupOptions.map((group) => (
                 <View key={group} className={`group-option ${guestDraftGroup === group ? 'group-option--active' : ''}`}>
@@ -308,9 +316,9 @@ export default function RosterPage() {
                   >
                     {group}
                   </Button>
-                  <Button className='group-remove' onClick={() => removeGroupOption(group)}>
-                    删除
-                  </Button>
+                  <Text className='group-remove' onClick={() => removeGroupOption(group)}>
+                    x
+                  </Text>
                 </View>
               ))}
             </View>
@@ -331,16 +339,16 @@ export default function RosterPage() {
             </View>
           </View>
 
-          <View className='composer-actions'>
-            <Button className='primary-compact primary-compact--wide' onClick={upsertGuests}>
-              {editingGuestId ? '保存宾客' : '批量加入名单'}
-            </Button>
-            {editingGuestId ? (
+          {editingGuestId ? (
+            <View className='composer-actions'>
+              <Button className='primary-compact primary-compact--wide' onClick={upsertGuests}>
+                保存宾客
+              </Button>
               <Button className='secondary-compact secondary-compact--wide' onClick={cancelEdit}>
                 取消编辑
               </Button>
-            ) : null}
-          </View>
+            </View>
+          ) : null}
         </View>
 
         <View className='panel panel--list'>

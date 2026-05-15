@@ -146,6 +146,10 @@
   margin-top: 12px;
 }
 
+.composer-actions--primary {
+  margin-top: 14px;
+}
+
 .composer-actions--rules {
   justify-content: flex-start;
 }
@@ -388,13 +392,8 @@
 }
 
 .group-option {
+  position: relative;
   display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 4px;
-  border: 1px solid rgba(124, 92, 255, 0.1);
-  border-radius: 999px;
-  background: #fcfbff;
 }
 
 .group-option--active {
@@ -402,7 +401,7 @@
 }
 
 .group-chip {
-  padding: 6px 10px;
+  padding: 7px 12px;
   border: 1px solid var(--border);
   background: #fff;
   color: var(--muted);
@@ -416,19 +415,20 @@
 }
 
 .group-remove {
+  position: absolute;
+  top: -4px;
+  right: -4px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-width: auto;
-  height: 28px;
-  margin: 0;
-  padding: 0 8px;
+  width: 16px;
+  height: 16px;
   border-radius: 999px;
-  border: none;
-  background: transparent;
+  background: #fff;
+  box-shadow: 0 1px 4px rgba(75, 59, 138, 0.12);
   color: var(--danger);
-  font-size: 10px;
-  line-height: 1.2;
+  font-size: 9px;
+  line-height: 1;
 }
 
 .group-add {
