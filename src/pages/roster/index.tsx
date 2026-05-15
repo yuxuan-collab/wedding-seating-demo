@@ -309,21 +309,25 @@ export default function RosterPage() {
                     {group}
                   </Button>
                   <Button className='group-remove' onClick={() => removeGroupOption(group)}>
-                    x
+                    删除
                   </Button>
                 </View>
               ))}
             </View>
             <View className='group-add'>
-              <Input
-                className='field__input field__input--small'
-                value={customGroupDraft}
-                placeholder='新增自定义类型，如：摄影师、主持人'
-                onInput={(event) => setCustomGroupDraft(readValue(event))}
-              />
-              <Button className='secondary-compact' onClick={addCustomGroup}>
-                新增类型
-              </Button>
+              <View className='group-add__input-wrap'>
+                <Input
+                  className='field__input group-add__input'
+                  value={customGroupDraft}
+                  placeholder='新增自定义类型，如：摄影师、主持人'
+                  onInput={(event) => setCustomGroupDraft(readValue(event))}
+                />
+              </View>
+              <View className='group-add__action'>
+                <Button className='secondary-compact group-add__button' onClick={addCustomGroup}>
+                  新增类型
+                </Button>
+              </View>
             </View>
           </View>
 
