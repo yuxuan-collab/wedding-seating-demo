@@ -34,6 +34,7 @@ export default function SeatingPage() {
     () => plan.guests.filter((guest) => guest.status !== 'waitlist'),
     [plan.guests]
   )
+  const allGuests = useMemo(() => plan.guests, [plan.guests])
   const previewGuests = useMemo(
     () => (includeWaitlistPreview ? plan.guests : confirmedGuests),
     [confirmedGuests, includeWaitlistPreview, plan.guests]
@@ -43,6 +44,16 @@ export default function SeatingPage() {
 
   const persistPlan = (nextPlan: SavedPlan) => {
     setPlan(savePlan(nextPlan))
+  }
+
+  const applyPreviewMode = (nextIncludeWaitlistPreview: boolean) => {
+    const nextPreviewGuests = nextIncludeWaitlistPreview ? plan.guests : confirmedGuests
+    const nextRules = sanitizeRules(plan.rules, nextPreviewGuests)
+    const nextSeating = generateSeating(plan.tables, nextPreviewGuests, nextRules)
+
+    setIncludeWaitlistPreview(nextIncludeWaitlistPreview)
+    setSelectedGuestId(null)
+    setPlan(replaceSeating(plan, nextSeating))
   }
 
   const updateTables = () => {
@@ -201,13 +212,13 @@ export default function SeatingPage() {
             <View className='preview-toggle__chips'>
               <Button
                 className={`preview-toggle__chip ${!includeWaitlistPreview ? 'preview-toggle__chip--active' : ''}`}
-                onClick={() => setIncludeWaitlistPreview(false)}
+                onClick={() => applyPreviewMode(false)}
               >
                 仅正式名单
               </Button>
               <Button
                 className={`preview-toggle__chip ${includeWaitlistPreview ? 'preview-toggle__chip--active' : ''}`}
-                onClick={() => setIncludeWaitlistPreview(true)}
+                onClick={() => applyPreviewMode(true)}
               >
                 加上候补一起预演
               </Button>
@@ -293,7 +304,7 @@ export default function SeatingPage() {
                           swapSelectedWith(guestId)
                         }}
                     >
-                      {getGuestName(previewGuests, guestId)}
+                      {getGuestName(allGuests, guestId)}
                     </Button>
                   ))}
 
