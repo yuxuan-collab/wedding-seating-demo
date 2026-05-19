@@ -22,7 +22,7 @@ export function createTables(tableCount: number, seatsPerTable: number): Table[]
 }
 
 export function sanitizeRules(nextRules: Rule[], nextGuests: Guest[]) {
-  const guestIdSet = new Set(nextGuests.filter((guest) => guest.status !== 'waitlist').map((guest) => guest.id))
+  const guestIdSet = new Set(nextGuests.map((guest) => guest.id))
 
   return nextRules
     .map((rule) => ({

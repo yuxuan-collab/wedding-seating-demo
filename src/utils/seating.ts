@@ -188,18 +188,6 @@ export function generateSeating(tables: Table[], guests: Guest[], rules: Rule[])
     result[target.table.id].push(...cluster.guestIds)
   })
 
-  rules
-    .filter((rule) => rule.type === 'must')
-    .forEach((rule) => {
-      const seatedTableIds = tables
-        .filter((table) => rule.guestIds.every((guestId) => result[table.id].includes(guestId)))
-        .map((table) => table.id)
-
-      if (seatedTableIds.length === 0) {
-        warnings.push(`必须同桌规则未满足：${rule.guestIds.join('、')}`)
-      }
-    })
-
   return {
     tables: result,
     warnings

@@ -14,13 +14,18 @@ function getGuestName(guests: Guest[], guestId: string) {
   return guests.find((guest) => guest.id === guestId)?.name ?? guestId
 }
 
+function getGuestStatusLabel(status?: Guest['status']) {
+  return status === 'waitlist' ? '候补' : '正式'
+}
+
 export default function RosterPage() {
   const [plan, setPlan] = useState<SavedPlan>(() => loadPlan())
   const [guestDraftText, setGuestDraftText] = useState('')
   const [guestDraftGroup, setGuestDraftGroup] = useState<GuestGroup>(defaultGuestGroups[0])
   const [customGroupDraft, setCustomGroupDraft] = useState('')
   const [editingGuestId, setEditingGuestId] = useState<string | null>(null)
-  const [searchText, setSearchText] = useState('')
+  const [editingRuleId, setEditingRuleId] = useState<string | null>(null)
+  const [groupFilter, setGroupFilter] = useState<string>('全部')
   const [selectedMustGuestIds, setSelectedMustGuestIds] = useState<string[]>([])
 
   useEffect(() => {
@@ -33,12 +38,12 @@ export default function RosterPage() {
     () => plan.guests.filter((guest) => guest.status !== 'waitlist'),
     [plan.guests]
   )
+  const allGuests = useMemo(() => plan.guests, [plan.guests])
   const waitlistGuests = useMemo(() => getWaitlistGuests(plan.guests), [plan.guests])
   const activeRules = useMemo(() => sanitizeRules(plan.rules, plan.guests), [plan.rules, plan.guests])
-  const normalizedSearch = searchText.trim().toLowerCase()
 
-  const filteredConfirmedGuests = confirmedGuests.filter((guest) => guest.name.toLowerCase().includes(normalizedSearch))
-  const filteredWaitlistGuests = waitlistGuests.filter((guest) => guest.name.toLowerCase().includes(normalizedSearch))
+  const filteredConfirmedGuests = confirmedGuests.filter((guest) => groupFilter === '全部' || guest.group === groupFilter)
+  const filteredWaitlistGuests = waitlistGuests.filter((guest) => groupFilter === '全部' || guest.group === groupFilter)
 
   const persistPlan = (nextPlan: SavedPlan) => {
     setPlan(savePlan(nextPlan))
@@ -220,6 +225,10 @@ export default function RosterPage() {
     }
 
     const exists = activeRules.some((rule) => {
+      if (editingRuleId && rule.id === editingRuleId) {
+        return false
+      }
+
       const normalized = [...rule.guestIds].sort().join(':')
       return normalized === [...selectedMustGuestIds].sort().join(':')
     })
@@ -231,17 +240,27 @@ export default function RosterPage() {
 
     persistPlan({
       ...plan,
-      rules: [
-        ...plan.rules,
-        {
-          id: `r${Date.now()}`,
-          type: 'must',
-          guestIds: selectedMustGuestIds
-        }
-      ]
+      rules: editingRuleId
+        ? plan.rules.map((rule) =>
+            rule.id === editingRuleId
+              ? {
+                  ...rule,
+                  guestIds: selectedMustGuestIds
+                }
+              : rule
+          )
+        : [
+            ...plan.rules,
+            {
+              id: `r${Date.now()}`,
+              type: 'must',
+              guestIds: selectedMustGuestIds
+            }
+          ]
     })
+    setEditingRuleId(null)
     setSelectedMustGuestIds([])
-    Taro.showToast({ title: '已添加同桌分组', icon: 'success' })
+    Taro.showToast({ title: editingRuleId ? '已更新同桌分组' : '已添加同桌分组', icon: 'success' })
   }
 
   const removeRule = (ruleId: string) => {
@@ -249,6 +268,27 @@ export default function RosterPage() {
       ...plan,
       rules: plan.rules.filter((rule) => rule.id !== ruleId)
     })
+
+    if (editingRuleId === ruleId) {
+      setEditingRuleId(null)
+      setSelectedMustGuestIds([])
+    }
+  }
+
+  const startEditRule = (ruleId: string) => {
+    const targetRule = activeRules.find((rule) => rule.id === ruleId && rule.type === 'must')
+    if (!targetRule) return
+
+    setEditingRuleId(ruleId)
+    setSelectedMustGuestIds(targetRule.guestIds)
+    setTimeout(() => {
+      Taro.pageScrollTo({ selector: '.rules-anchor', duration: 220, offsetTop: 12 })
+    }, 60)
+  }
+
+  const cancelEditRule = () => {
+    setEditingRuleId(null)
+    setSelectedMustGuestIds([])
   }
 
   return (
@@ -267,7 +307,7 @@ export default function RosterPage() {
 
       <View className='roster-grid'>
         <View className='panel panel--composer'>
-          <Text className='panel__title'>批量录入</Text>
+          <Text className='panel__title'>名单录入</Text>
           <Text className='panel__hint'>支持换行、逗号或分号。默认先加入正式名单。</Text>
           {editingGuestId ? (
             <View className='field edit-anchor'>
@@ -283,7 +323,7 @@ export default function RosterPage() {
           ) : (
             <View className='field'>
               <View className='field__label-row'>
-                <Text className='field__label'>批量输入宾客姓名</Text>
+                <Text className='field__label'>批量导入名单</Text>
                 <Text className='field__tip'>示例：刘珈 / 张睿婧 / 罗宇峰，郭文卓</Text>
               </View>
               <Textarea
@@ -306,7 +346,7 @@ export default function RosterPage() {
           ) : null}
 
           <View className='field'>
-            <Text className='field__label'>{editingGuestId ? '宾客类型' : '默认类型管理'}</Text>
+            <Text className='field__label'>{editingGuestId ? '宾客类型' : '默认宾客类型'}</Text>
             <View className='group-picker'>
               {plan.groupOptions.map((group) => (
                 <View key={group} className={`group-option ${guestDraftGroup === group ? 'group-option--active' : ''}`}>
@@ -327,7 +367,7 @@ export default function RosterPage() {
                 <Input
                   className='field__input group-add__input'
                   value={customGroupDraft}
-                  placeholder='新增自定义类型，如：摄影师、主持人'
+                  placeholder='输入新类型'
                   onInput={(event) => setCustomGroupDraft(readValue(event))}
                 />
               </View>
@@ -358,13 +398,24 @@ export default function RosterPage() {
           </View>
 
           <View className='field'>
-            <Text className='field__label'>搜索</Text>
-            <Input
-              className='field__input'
-              value={searchText}
-              placeholder='输入姓名快速筛选'
-              onInput={(event) => setSearchText(readValue(event))}
-            />
+            <Text className='field__label'>类型筛选</Text>
+            <View className='filter-chips'>
+              <Button
+                className={`filter-chip ${groupFilter === '全部' ? 'filter-chip--active' : ''}`}
+                onClick={() => setGroupFilter('全部')}
+              >
+                全部
+              </Button>
+              {plan.groupOptions.map((group) => (
+                <Button
+                  key={group}
+                  className={`filter-chip ${groupFilter === group ? 'filter-chip--active' : ''}`}
+                  onClick={() => setGroupFilter(group)}
+                >
+                  {group}
+                </Button>
+              ))}
+            </View>
           </View>
 
           <View className='list-columns'>
@@ -445,10 +496,12 @@ export default function RosterPage() {
         </View>
 
         <View className='panel panel--rules'>
-          <View className='rules-head'>
+          <View className='rules-head rules-anchor'>
             <View>
               <Text className='panel__title panel__title--compact'>同桌要求</Text>
-              <Text className='panel__hint panel__hint--inline'>从正式名单里点选宾客，建立必须同桌分组。</Text>
+              <Text className='panel__hint panel__hint--inline'>
+                {editingRuleId ? '正在编辑同桌分组，调整成员后保存。' : '可从正式名单或候补池点选宾客，建立必须同桌分组。'}
+              </Text>
             </View>
             <Button className='secondary-compact' onClick={() => setSelectedMustGuestIds([])}>
               清空当前选择
@@ -465,21 +518,27 @@ export default function RosterPage() {
           </View>
 
           <View className='picker-grid'>
-            {confirmedGuests.map((guest) => (
+            {allGuests.map((guest) => (
               <Button
                 key={guest.id}
                 className={`picker-chip ${selectedMustGuestIds.includes(guest.id) ? 'picker-chip--active' : ''}`}
                 onClick={() => toggleMustGuestSelection(guest.id)}
               >
                 {guest.name}
+                <Text className='picker-chip__meta'>{getGuestStatusLabel(guest.status)}</Text>
               </Button>
             ))}
           </View>
 
           <View className='composer-actions composer-actions--rules'>
             <Button className='primary-compact primary-compact--rule' onClick={createMustRule}>
-              建立同桌分组
+              {editingRuleId ? '保存同桌分组' : '建立同桌分组'}
             </Button>
+            {editingRuleId ? (
+              <Button className='secondary-compact' onClick={cancelEditRule}>
+                取消编辑
+              </Button>
+            ) : null}
           </View>
 
           <View className='rule-board'>
@@ -492,14 +551,19 @@ export default function RosterPage() {
                     <View className='rule-members'>
                       {rule.guestIds.map((guestId) => (
                         <Text key={guestId} className='rule-member'>
-                          {getGuestName(confirmedGuests, guestId)}
+                          {getGuestName(allGuests, guestId)}
                         </Text>
                       ))}
                     </View>
                   </View>
-                  <Button className='mini-btn mini-btn--danger rule-delete' onClick={() => removeRule(rule.id)}>
-                    删除
-                  </Button>
+                  <View className='rule-actions'>
+                    <Button className='mini-btn' onClick={() => startEditRule(rule.id)}>
+                      编辑
+                    </Button>
+                    <Button className='mini-btn mini-btn--danger rule-delete' onClick={() => removeRule(rule.id)}>
+                      删除
+                    </Button>
+                  </View>
                 </View>
               ))}
           </View>

@@ -11,11 +11,17 @@ function getGuestName(guests: Guest[], guestId: string) {
   return guests.find((guest) => guest.id === guestId)?.name ?? guestId
 }
 
+function getCompactTableName(name: string, index: number) {
+  const matched = name.match(/^(\d+)/)
+  return matched ? `T${matched[1]}` : `T${index + 1}`
+}
+
 export default function SeatingPage() {
   const [plan, setPlan] = useState<SavedPlan>(() => loadPlan())
   const [tableCount, setTableCount] = useState(String(loadPlan().tables.length))
   const [seatsPerTable, setSeatsPerTable] = useState(String(loadPlan().tables[0]?.capacity ?? 10))
   const [selectedGuestId, setSelectedGuestId] = useState<string | null>(null)
+  const [includeWaitlistPreview, setIncludeWaitlistPreview] = useState(false)
 
   useEffect(() => {
     const nextPlan = loadPlan()
@@ -28,7 +34,11 @@ export default function SeatingPage() {
     () => plan.guests.filter((guest) => guest.status !== 'waitlist'),
     [plan.guests]
   )
-  const activeRules = useMemo(() => sanitizeRules(plan.rules, plan.guests), [plan.rules, plan.guests])
+  const previewGuests = useMemo(
+    () => (includeWaitlistPreview ? plan.guests : confirmedGuests),
+    [confirmedGuests, includeWaitlistPreview, plan.guests]
+  )
+  const activeRules = useMemo(() => sanitizeRules(plan.rules, previewGuests), [plan.rules, previewGuests])
   const totalSeats = useMemo(() => plan.tables.reduce((sum, table) => sum + table.capacity, 0), [plan.tables])
 
   const persistPlan = (nextPlan: SavedPlan) => {
@@ -45,8 +55,33 @@ export default function SeatingPage() {
     setSelectedGuestId(null)
   }
 
+  const adjustTableCapacity = (tableId: string, delta: number) => {
+    const targetTable = plan.tables.find((table) => table.id === tableId)
+    if (!targetTable) return
+
+    const currentGuestCount = plan.seating.tables[tableId]?.length ?? 0
+    const nextCapacity = Math.max(1, targetTable.capacity + delta)
+
+    if (nextCapacity < currentGuestCount) {
+      Taro.showToast({ title: '先移出宾客，再减少席位', icon: 'none' })
+      return
+    }
+
+    persistPlan({
+      ...plan,
+      tables: plan.tables.map((table) =>
+        table.id === tableId
+          ? {
+              ...table,
+              capacity: nextCapacity
+            }
+          : table
+      )
+    })
+  }
+
   const regenerate = () => {
-    const seating = generateSeating(plan.tables, confirmedGuests, activeRules)
+    const seating = generateSeating(plan.tables, previewGuests, activeRules)
     setPlan(replaceSeating(plan, seating))
     Taro.showToast({ title: '已生成座位方案', icon: 'success' })
   }
@@ -155,10 +190,28 @@ export default function SeatingPage() {
             </Button>
             <Button
               className='secondary-compact'
-              onClick={() => Taro.setClipboardData({ data: exportSeatingText(plan.tables, confirmedGuests, plan.seating) })}
+              onClick={() => Taro.setClipboardData({ data: exportSeatingText(plan.tables, previewGuests, plan.seating) })}
             >
               导出文本
             </Button>
+          </View>
+
+          <View className='preview-toggle'>
+            <Text className='field__label'>排座预演</Text>
+            <View className='preview-toggle__chips'>
+              <Button
+                className={`preview-toggle__chip ${!includeWaitlistPreview ? 'preview-toggle__chip--active' : ''}`}
+                onClick={() => setIncludeWaitlistPreview(false)}
+              >
+                仅正式名单
+              </Button>
+              <Button
+                className={`preview-toggle__chip ${includeWaitlistPreview ? 'preview-toggle__chip--active' : ''}`}
+                onClick={() => setIncludeWaitlistPreview(true)}
+              >
+                加上候补一起预演
+              </Button>
+            </View>
           </View>
 
           <View className='summary-grid'>
@@ -171,8 +224,8 @@ export default function SeatingPage() {
               <Text className='summary-value'>{totalSeats}</Text>
             </View>
             <View className='summary-card'>
-              <Text className='summary-label'>正式名单</Text>
-              <Text className='summary-value'>{confirmedGuests.length} 人</Text>
+              <Text className='summary-label'>{includeWaitlistPreview ? '本次参排人数' : '正式名单'}</Text>
+              <Text className='summary-value'>{previewGuests.length} 人</Text>
             </View>
             <View className='summary-card'>
               <Text className='summary-label'>候补池</Text>
@@ -204,38 +257,52 @@ export default function SeatingPage() {
           ) : null}
 
           <View className='table-grid'>
-            {plan.tables.map((table) => (
+            {plan.tables.map((table, index) => (
               <View key={table.id} className='table-card'>
                 <View className='table-head'>
-                  <Text className='table-name'>{table.name}</Text>
-                  <Text className='table-meta'>
-                    {plan.seating.tables[table.id]?.length ?? 0}/{table.capacity}
-                  </Text>
+                  <View className='table-head__top'>
+                    <Text className='table-name'>{getCompactTableName(table.name, index)}</Text>
+                    <Text className='table-meta'>
+                      {plan.seating.tables[table.id]?.length ?? 0}/{table.capacity}
+                    </Text>
+                  </View>
+                  <View className='table-head__bottom'>
+                    <View className='table-tools__actions'>
+                      <Button className='table-tool-btn' onClick={() => adjustTableCapacity(table.id, -1)}>
+                        −
+                      </Button>
+                      <Button className='table-tool-btn table-tool-btn--primary' onClick={() => adjustTableCapacity(table.id, 1)}>
+                        ＋
+                      </Button>
+                    </View>
+                  </View>
                 </View>
 
-                <View className='seat-list'>
-                  {(plan.seating.tables[table.id] ?? []).map((guestId) => (
-                    <Button
-                      key={guestId}
-                      className={`seat-chip ${selectedGuestId === guestId ? 'seat-chip--active' : ''}`}
-                      onClick={() => {
-                        if (!selectedGuestId || selectedGuestId === guestId) {
-                          setSelectedGuestId((currentId) => (currentId === guestId ? null : guestId))
-                          return
-                        }
+                <View className='table-body'>
+                  <View className='seat-list'>
+                    {(plan.seating.tables[table.id] ?? []).map((guestId) => (
+                      <Button
+                        key={guestId}
+                        className={`seat-chip ${selectedGuestId === guestId ? 'seat-chip--active' : ''}`}
+                        onClick={() => {
+                          if (!selectedGuestId || selectedGuestId === guestId) {
+                            setSelectedGuestId((currentId) => (currentId === guestId ? null : guestId))
+                            return
+                          }
 
-                        swapSelectedWith(guestId)
-                      }}
+                          swapSelectedWith(guestId)
+                        }}
                     >
-                      {getGuestName(confirmedGuests, guestId)}
+                      {getGuestName(previewGuests, guestId)}
                     </Button>
                   ))}
 
-                  {selectedGuestId && selectedTableId !== table.id ? (
-                    <Button className='drop-target' onClick={() => moveSelectedGroup(table.id)}>
-                      移入此桌
-                    </Button>
-                  ) : null}
+                    {selectedGuestId && selectedTableId !== table.id ? (
+                      <Button className='drop-target' onClick={() => moveSelectedGroup(table.id)}>
+                        移入此桌
+                      </Button>
+                    ) : null}
+                  </View>
                 </View>
               </View>
             ))}
