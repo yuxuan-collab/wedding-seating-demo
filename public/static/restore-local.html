@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <title>Restore Local Data</title>
+  </head>
+  <body>
+    <script>
+      ;(function () {
+        fetch('/static/local-recovery.json', { cache: 'no-store' })
+          .then(function (response) {
+            return response.json()
+          })
+          .then(function (data) {
+            if (typeof data.raw === 'string') {
+              window.localStorage.setItem('wedding-seating-demo-state', data.raw)
+              window.sessionStorage.removeItem('wedding-seating-storage-bridge-attempted-v2')
+            }
+
+            window.location.href = '/#/pages/roster/index'
+          })
+      })()
+    </script>
+    正在恢复本地名单...
+  </body>
+</html>

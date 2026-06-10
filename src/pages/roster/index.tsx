@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { Button, Input, Text, Textarea, View } from '@tarojs/components'
 import Taro from '@tarojs/taro'
 import { TopNav } from '../../components/top-nav'
+import { navigatePage } from '../../utils/navigation'
 import { defaultGuestGroups, getWaitlistGuests, loadPlan, sanitizeRules, savePlan } from '../../utils/plan'
 import type { Guest, GuestGroup, SavedPlan } from '../../types/seating'
 import './index.scss'
@@ -22,6 +23,9 @@ export default function RosterPage() {
   const [plan, setPlan] = useState<SavedPlan>(() => loadPlan())
   const [guestDraftText, setGuestDraftText] = useState('')
   const [guestDraftGroup, setGuestDraftGroup] = useState<GuestGroup>(defaultGuestGroups[0])
+  const [bulkTargetGroup, setBulkTargetGroup] = useState<GuestGroup>(defaultGuestGroups[0])
+  const [bulkNameDraftText, setBulkNameDraftText] = useState('')
+  const [bulkNameTargetGroup, setBulkNameTargetGroup] = useState<GuestGroup>(defaultGuestGroups[0])
   const [customGroupDraft, setCustomGroupDraft] = useState('')
   const [editingGuestId, setEditingGuestId] = useState<string | null>(null)
   const [editingRuleId, setEditingRuleId] = useState<string | null>(null)
@@ -32,6 +36,8 @@ export default function RosterPage() {
     const nextPlan = loadPlan()
     setPlan(nextPlan)
     setGuestDraftGroup(nextPlan.groupOptions[0] ?? defaultGuestGroups[0])
+    setBulkTargetGroup(nextPlan.groupOptions[0] ?? defaultGuestGroups[0])
+    setBulkNameTargetGroup(nextPlan.groupOptions[0] ?? defaultGuestGroups[0])
   }, [])
 
   const confirmedGuests = useMemo(
@@ -46,7 +52,14 @@ export default function RosterPage() {
   const filteredWaitlistGuests = waitlistGuests.filter((guest) => groupFilter === '全部' || guest.group === groupFilter)
 
   const persistPlan = (nextPlan: SavedPlan) => {
-    setPlan(savePlan(nextPlan))
+    const savedPlan = savePlan(nextPlan)
+    setPlan(savedPlan)
+    setBulkTargetGroup((currentGroup) =>
+      savedPlan.groupOptions.includes(currentGroup) ? currentGroup : savedPlan.groupOptions[0] ?? defaultGuestGroups[0]
+    )
+    setBulkNameTargetGroup((currentGroup) =>
+      savedPlan.groupOptions.includes(currentGroup) ? currentGroup : savedPlan.groupOptions[0] ?? defaultGuestGroups[0]
+    )
   }
 
   const parseGuestNames = (rawText: string) =>
@@ -212,6 +225,75 @@ export default function RosterPage() {
     })
   }
 
+  const bulkReassignFilteredGuests = () => {
+    if (groupFilter === '全部') {
+      Taro.showToast({ title: '先按错误类型筛选一批人', icon: 'none' })
+      return
+    }
+
+    if (bulkTargetGroup === groupFilter) {
+      Taro.showToast({ title: '目标类型和当前筛选相同', icon: 'none' })
+      return
+    }
+
+    const affectedGuests = plan.guests.filter((guest) => guest.group === groupFilter)
+    if (affectedGuests.length === 0) {
+      Taro.showToast({ title: '当前筛选下没有可修改的宾客', icon: 'none' })
+      return
+    }
+
+    persistPlan({
+      ...plan,
+      guests: plan.guests.map((guest) =>
+        guest.group === groupFilter
+          ? {
+              ...guest,
+              group: bulkTargetGroup
+            }
+          : guest
+      )
+    })
+    setGroupFilter(bulkTargetGroup)
+    Taro.showToast({ title: `已批量修改 ${affectedGuests.length} 人`, icon: 'success' })
+  }
+
+  const bulkReassignGuestsByNames = () => {
+    const targetNames = parseGuestNames(bulkNameDraftText)
+    if (targetNames.length === 0) {
+      Taro.showToast({ title: '先输入一批姓名', icon: 'none' })
+      return
+    }
+
+    const targetNameSet = new Set(targetNames)
+    const matchedGuests = plan.guests.filter((guest) => targetNameSet.has(guest.name.trim()))
+
+    if (matchedGuests.length === 0) {
+      Taro.showToast({ title: '没有匹配到名单中的姓名', icon: 'none' })
+      return
+    }
+
+    const matchedNameSet = new Set(matchedGuests.map((guest) => guest.name.trim()))
+    const missingCount = targetNames.filter((name) => !matchedNameSet.has(name)).length
+
+    persistPlan({
+      ...plan,
+      guests: plan.guests.map((guest) =>
+        targetNameSet.has(guest.name.trim())
+          ? {
+              ...guest,
+              group: bulkNameTargetGroup
+            }
+          : guest
+      )
+    })
+    setBulkNameDraftText('')
+    setGroupFilter(bulkNameTargetGroup)
+    Taro.showToast({
+      title: missingCount > 0 ? `已更新 ${matchedGuests.length} 人，${missingCount} 人未匹配` : `已批量贴标签 ${matchedGuests.length} 人`,
+      icon: 'success'
+    })
+  }
+
   const toggleMustGuestSelection = (guestId: string) => {
     setSelectedMustGuestIds((currentIds) =>
       currentIds.includes(guestId) ? currentIds.filter((id) => id !== guestId) : [...currentIds, guestId]
@@ -300,7 +382,7 @@ export default function RosterPage() {
           <Text className='roster-title'>名单管理</Text>
           <Text className='roster-subtitle'>先整理名单、候补池和同桌要求，再去排座页安排具体桌位。</Text>
         </View>
-        <Button className='primary-compact' onClick={() => Taro.redirectTo({ url: '/pages/seating/index' })}>
+        <Button className='primary-compact' onClick={() => navigatePage('/pages/seating/index')}>
           去排座页
         </Button>
       </View>
@@ -317,7 +399,6 @@ export default function RosterPage() {
                 value={guestDraftText}
                 placeholder='编辑宾客姓名'
                 onInput={(event) => setGuestDraftText(readValue(event))}
-                onChange={(event) => setGuestDraftText(readValue(event))}
               />
             </View>
           ) : (
@@ -332,7 +413,6 @@ export default function RosterPage() {
                 maxlength={6000}
                 placeholder='粘贴名单，支持换行或逗号分隔'
                 onInput={(event) => setGuestDraftText(readValue(event))}
-                onChange={(event) => setGuestDraftText(readValue(event))}
               />
             </View>
           )}
@@ -415,6 +495,59 @@ export default function RosterPage() {
                   {group}
                 </Button>
               ))}
+            </View>
+          </View>
+
+          <View className='field'>
+            <View className='field__label-row'>
+              <Text className='field__label'>批量修正类型</Text>
+              <Text className='field__tip'>对当前筛选结果生效</Text>
+            </View>
+            <View className='bulk-type-bar'>
+              <View className='bulk-type-bar__chips'>
+                {plan.groupOptions.map((group) => (
+                  <Button
+                    key={group}
+                    className={`filter-chip ${bulkTargetGroup === group ? 'filter-chip--active' : ''}`}
+                    onClick={() => setBulkTargetGroup(group)}
+                  >
+                    {group}
+                  </Button>
+                ))}
+              </View>
+              <Button className='secondary-compact bulk-type-bar__action' onClick={bulkReassignFilteredGuests}>
+                把当前筛选批量改为该类型
+              </Button>
+            </View>
+          </View>
+
+          <View className='field'>
+            <View className='field__label-row'>
+              <Text className='field__label'>按姓名批量贴标签</Text>
+              <Text className='field__tip'>适合导入后快速修正一批人</Text>
+            </View>
+            <View className='bulk-type-bar'>
+              <Textarea
+                className='field__textarea bulk-type-bar__textarea'
+                value={bulkNameDraftText}
+                maxlength={6000}
+                placeholder='输入姓名，支持换行或逗号分隔'
+                onInput={(event) => setBulkNameDraftText(readValue(event))}
+              />
+              <View className='bulk-type-bar__chips bulk-type-bar__chips--stack'>
+                {plan.groupOptions.map((group) => (
+                  <Button
+                    key={group}
+                    className={`filter-chip ${bulkNameTargetGroup === group ? 'filter-chip--active' : ''}`}
+                    onClick={() => setBulkNameTargetGroup(group)}
+                  >
+                    {group}
+                  </Button>
+                ))}
+              </View>
+              <Button className='secondary-compact bulk-type-bar__action' onClick={bulkReassignGuestsByNames}>
+                把这批姓名改为该类型
+              </Button>
             </View>
           </View>
 
@@ -512,7 +645,7 @@ export default function RosterPage() {
             <Text className='selection-label'>当前已选</Text>
             <Text className='selection-value'>
               {selectedMustGuestIds.length > 0
-                ? selectedMustGuestIds.map((guestId) => getGuestName(confirmedGuests, guestId)).join('、')
+                ? selectedMustGuestIds.map((guestId) => getGuestName(allGuests, guestId)).join('、')
                 : '暂无'}
             </Text>
           </View>

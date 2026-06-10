@@ -6,6 +6,12 @@ interface GuestCluster {
   groups: Set<Guest['group']>
 }
 
+const parentAndCoupleFriendGroups = new Set(['男方朋友', '女方朋友', '男方父母朋友', '女方父母朋友'])
+
+function getFriendSegment(group?: Guest['group']) {
+  return group && parentAndCoupleFriendGroups.has(group) ? group : null
+}
+
 function buildMustGraph(guests: Guest[], rules: Rule[]) {
   const graph = new Map<string, Set<string>>()
 
@@ -135,14 +141,27 @@ function scoreTable(
     .map((guestId) => guestsById.get(guestId)?.group)
     .filter((group): group is Guest['group'] => Boolean(group))
 
+  const existingFriendSegments = existingGroups
+    .map((group) => getFriendSegment(group))
+    .filter((group): group is Guest['group'] => Boolean(group))
+  const clusterFriendSegments = [...cluster.groups]
+    .map((group) => getFriendSegment(group))
+    .filter((group): group is Guest['group'] => Boolean(group))
+
   let score = 0
   cluster.guestIds.forEach(() => {
     existingGroups.forEach((group) => {
       if (cluster.groups.has(group)) {
-        score += 2
+        score += 6
       } else {
-        score += 0.5
+        score -= 0.2
       }
+    })
+  })
+
+  clusterFriendSegments.forEach((segment) => {
+    existingFriendSegments.forEach((existingSegment) => {
+      score += existingSegment === segment ? 8 : -12
     })
   })
 

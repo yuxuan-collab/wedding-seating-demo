@@ -90,7 +90,7 @@ export default function IndexPage() {
     )
   )
   const [guestDraftText, setGuestDraftText] = useState('')
-  const [newGuestGroup, setNewGuestGroup] = useState<GuestGroup>('朋友')
+  const [newGuestGroup, setNewGuestGroup] = useState<GuestGroup>('女方朋友')
   const [selectedMustGuestIds, setSelectedMustGuestIds] = useState<string[]>([])
   const [selectedSeatGuestId, setSelectedSeatGuestId] = useState<string | null>(null)
   const [selectedSwapGuestId, setSelectedSwapGuestId] = useState<string | null>(null)
@@ -232,7 +232,7 @@ export default function IndexPage() {
   const cancelEditGuest = () => {
     setEditingGuestId(null)
     setGuestDraftText('')
-    setNewGuestGroup('朋友')
+    setNewGuestGroup('女方朋友')
   }
 
   const deleteGuest = (guestId: string) => {
@@ -254,7 +254,7 @@ export default function IndexPage() {
       guest.id === guestId
         ? {
             ...guest,
-            status: 'waitlist'
+            status: 'waitlist' as const
           }
         : guest
     )
@@ -277,7 +277,7 @@ export default function IndexPage() {
         guest.id === guestId
           ? {
               ...guest,
-              status: 'confirmed'
+              status: 'confirmed' as const
             }
           : guest
       )
@@ -536,7 +536,7 @@ export default function IndexPage() {
           <View className='panel panel--input'>
             <Text className='panel__title'>批量录入</Text>
             <Text className='panel__hint'>
-              先不区分宾客类型，默认都按“朋友”录入。支持换行或用逗号一次性输入多人。
+              先按“女方朋友”录入，可在名单页批量改成男方朋友或双方父母朋友。
             </Text>
             {editingGuestId ? (
               <View className='field'>
@@ -546,7 +546,6 @@ export default function IndexPage() {
                   value={guestDraftText}
                   placeholder='编辑宾客姓名'
                   onInput={handleGuestDraftChange}
-                  onChange={handleGuestDraftChange}
                 />
               </View>
             ) : (
@@ -559,7 +558,6 @@ export default function IndexPage() {
                   autoHeight
                   placeholder={'示例：\n新郎爸爸\n新郎妈妈\n大学室友A，大学室友B'}
                   onInput={handleGuestDraftChange}
-                  onChange={handleGuestDraftChange}
                 />
               </View>
             )}

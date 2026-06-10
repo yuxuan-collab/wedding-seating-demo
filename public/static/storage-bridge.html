@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <title>Storage Bridge</title>
+  </head>
+  <body>
+    <script>
+      ;(function () {
+        var params = new URLSearchParams(window.location.search)
+        var target = params.get('target') || 'http://localhost:4173'
+        var raw = window.localStorage.getItem('wedding-seating-demo-state')
+
+        window.parent.postMessage(
+          {
+            source: 'wedding-seating-storage-bridge',
+            raw: raw
+          },
+          target
+        )
+      })()
+    </script>
+  </body>
+</html>

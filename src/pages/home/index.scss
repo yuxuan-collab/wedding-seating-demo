@@ -10,7 +10,7 @@
   padding: 28px;
   border: 1px solid var(--border);
   border-radius: 20px;
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.94), rgba(245, 242, 255, 0.92));
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.94), rgba(242, 247, 239, 0.92));
   box-shadow: var(--shadow);
 }
 
@@ -62,7 +62,7 @@
 }
 
 .home-secondary {
-  background: #ece8f8;
+  background: var(--primary-soft);
   color: var(--text);
 }
 
@@ -75,7 +75,7 @@
 .metric-card {
   min-height: 94px;
   padding: 16px;
-  border: 1px solid rgba(124, 92, 255, 0.14);
+  border: 1px solid rgba(109, 139, 112, 0.16);
   border-radius: 14px;
   background: #fff;
 }
@@ -97,6 +97,10 @@
   display: grid;
   gap: 14px;
   margin-top: 14px;
+}
+
+.home-panels .plan-manager {
+  box-shadow: var(--shadow);
 }
 
 .home-panel {
@@ -136,5 +140,19 @@
 
   .home-panels {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .home-panels .plan-manager {
+    grid-column: 1 / -1;
+  }
+}
+
+@media screen and (min-width: 1280px) {
+  .home-panels {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .home-panels .plan-manager {
+    grid-column: 1 / -1;
   }
 }

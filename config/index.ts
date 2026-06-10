@@ -1,3 +1,4 @@
+import path from 'node:path'
 import { defineConfig } from '@tarojs/cli'
 
 export default defineConfig({
@@ -12,6 +13,19 @@ export default defineConfig({
   sourceRoot: 'src',
   outputRoot: 'dist',
   plugins: [],
+  copy: {
+    patterns: [
+      {
+        from: path.resolve(__dirname, '../public/static/storage-bridge.html'),
+        to: path.resolve(__dirname, '../dist/static/storage-bridge.html')
+      },
+      {
+        from: path.resolve(__dirname, '../public/static/restore-local.html'),
+        to: path.resolve(__dirname, '../dist/static/restore-local.html')
+      }
+    ],
+    options: {}
+  },
   framework: 'react',
   compiler: {
     type: 'vite'

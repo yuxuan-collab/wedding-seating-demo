@@ -109,7 +109,7 @@
 .preview-toggle__chip--active {
   background: var(--primary-soft);
   color: var(--primary);
-  border-color: rgba(124, 92, 255, 0.22);
+  border-color: rgba(109, 139, 112, 0.24);
 }
 
 .primary-compact,
@@ -134,7 +134,7 @@
 }
 
 .secondary-compact {
-  background: #ece8f8;
+  background: var(--primary-soft);
   color: var(--text);
 }
 
@@ -149,7 +149,7 @@
   padding: 10px 12px;
   border-radius: 12px;
   border: 1px solid var(--border);
-  background: #fcfbff;
+  background: #fbfdf9;
 }
 
 .summary-label {
@@ -194,12 +194,12 @@
 }
 
 .table-card {
-  min-height: 318px;
+  min-height: 120px;
   padding: 9px;
-  border: 1px solid rgba(113, 90, 191, 0.14);
+  border: 1px solid rgba(91, 116, 94, 0.14);
   border-radius: 12px;
-  background: linear-gradient(180deg, #fcfbff, #ffffff);
-  box-shadow: 0 6px 16px rgba(75, 59, 138, 0.05);
+  background: linear-gradient(180deg, #fbfdf9, #ffffff);
+  box-shadow: 0 6px 16px rgba(76, 96, 79, 0.05);
 }
 
 .table-head {
@@ -240,9 +240,9 @@
   align-items: center;
   gap: 4px;
   padding: 2px;
-  border: 1px solid rgba(113, 90, 191, 0.08);
+  border: 1px solid rgba(91, 116, 94, 0.1);
   border-radius: 999px;
-  background: rgba(124, 92, 255, 0.05);
+  background: rgba(109, 139, 112, 0.06);
 }
 
 .table-tool-btn {
@@ -275,13 +275,14 @@
   display: grid;
   gap: 4px;
   align-content: start;
-  min-height: 264px;
+  min-height: 0;
 }
 
 .seat-chip {
   display: flex;
   align-items: center;
   justify-content: center;
+  gap: 4px;
   min-height: 23px;
   padding: 0 6px;
   border-radius: 6px;
@@ -293,23 +294,44 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  box-shadow: 0 4px 12px rgba(75, 59, 138, 0.04);
+  box-shadow: 0 4px 12px rgba(76, 96, 79, 0.04);
+}
+
+.seat-chip__name {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.seat-chip__group {
+  flex: 0 0 auto;
+  max-width: 58px;
+  padding: 1px 4px;
+  border-radius: 999px;
+  background: rgba(109, 139, 112, 0.1);
+  color: var(--muted);
+  font-size: 8px;
+  line-height: 1.2;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .seat-chip--active {
   background: var(--primary-soft);
   color: var(--primary);
-  border-color: rgba(124, 92, 255, 0.22);
-  box-shadow: 0 0 0 2px rgba(124, 92, 255, 0.12);
+  border-color: rgba(109, 139, 112, 0.24);
+  box-shadow: 0 0 0 2px rgba(109, 139, 112, 0.14);
 }
 
 .drop-target {
   width: 100%;
   min-height: 28px;
   padding: 0 8px;
-  border: 1px dashed rgba(124, 92, 255, 0.35);
+  border: 1px dashed rgba(109, 139, 112, 0.36);
   border-radius: 8px;
-  background: rgba(124, 92, 255, 0.08);
+  background: rgba(109, 139, 112, 0.1);
   color: var(--primary);
   font-size: 10px;
 }

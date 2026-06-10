@@ -2,13 +2,25 @@ import { useEffect, useMemo, useState } from 'react'
 import { Button, Input, Text, View } from '@tarojs/components'
 import Taro from '@tarojs/taro'
 import { TopNav } from '../../components/top-nav'
-import { createTables, loadPlan, replaceSeating, savePlan, sanitizeRules } from '../../utils/plan'
+import {
+  createTables,
+  loadPlannerState,
+  loadPlan,
+  replaceSeating,
+  savePlan,
+  sanitizeRules,
+} from '../../utils/plan'
+import { navigatePage } from '../../utils/navigation'
 import type { Guest, SavedPlan, SeatingResult } from '../../types/seating'
 import { exportSeatingText, findGuestTableId, generateSeating, getMustSeatGroup } from '../../utils/seating'
 import './index.scss'
 
 function getGuestName(guests: Guest[], guestId: string) {
   return guests.find((guest) => guest.id === guestId)?.name ?? guestId
+}
+
+function getGuestGroup(guests: Guest[], guestId: string) {
+  return guests.find((guest) => guest.id === guestId)?.group ?? ''
 }
 
 function getCompactTableName(name: string, index: number) {
@@ -24,10 +36,10 @@ export default function SeatingPage() {
   const [includeWaitlistPreview, setIncludeWaitlistPreview] = useState(false)
 
   useEffect(() => {
-    const nextPlan = loadPlan()
-    setPlan(nextPlan)
-    setTableCount(String(nextPlan.tables.length))
-    setSeatsPerTable(String(nextPlan.tables[0]?.capacity ?? 10))
+    const nextPlannerState = loadPlannerState()
+    setPlan(nextPlannerState.plan)
+    setTableCount(String(nextPlannerState.plan.tables.length))
+    setSeatsPerTable(String(nextPlannerState.plan.tables[0]?.capacity ?? 10))
   }, [])
 
   const confirmedGuests = useMemo(
@@ -59,9 +71,15 @@ export default function SeatingPage() {
   const updateTables = () => {
     const nextTableCount = Math.max(1, Number(tableCount) || 1)
     const nextSeatsPerTable = Math.max(1, Number(seatsPerTable) || 1)
+    const nextTables = createTables(nextTableCount, nextSeatsPerTable)
+    const nextPreviewGuests = includeWaitlistPreview ? plan.guests : confirmedGuests
+    const nextRules = sanitizeRules(plan.rules, nextPreviewGuests)
+
     persistPlan({
       ...plan,
-      tables: createTables(nextTableCount, nextSeatsPerTable)
+      tables: nextTables,
+      rules: nextRules,
+      seating: generateSeating(nextTables, nextPreviewGuests, nextRules)
     })
     setSelectedGuestId(null)
   }
@@ -174,7 +192,7 @@ export default function SeatingPage() {
           <Text className='seating-title'>排座页</Text>
           <Text className='seating-subtitle'>这里专门做桌位配置、自动生成和桌面看板调整。</Text>
         </View>
-        <Button className='primary-compact' onClick={() => Taro.redirectTo({ url: '/pages/roster/index' })}>
+        <Button className='primary-compact' onClick={() => navigatePage('/pages/roster/index')}>
           回名单页
         </Button>
       </View>
@@ -303,8 +321,9 @@ export default function SeatingPage() {
 
                           swapSelectedWith(guestId)
                         }}
-                    >
-                      {getGuestName(allGuests, guestId)}
+                      >
+                        <Text className='seat-chip__name'>{getGuestName(allGuests, guestId)}</Text>
+                        <Text className='seat-chip__group'>{getGuestGroup(allGuests, guestId)}</Text>
                     </Button>
                   ))}
 

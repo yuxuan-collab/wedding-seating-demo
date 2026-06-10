@@ -1,24 +1,24 @@
 :root {
-  --bg: #f7f7fc;
+  --bg: #f7faf5;
   --panel: rgba(255, 255, 255, 0.94);
   --panel-strong: #ffffff;
-  --text: #1f1637;
-  --muted: #7b7791;
-  --primary: #7c5cff;
-  --primary-strong: #6947f5;
-  --primary-soft: #eee9ff;
-  --border: rgba(101, 79, 174, 0.14);
-  --ok: #317b63;
+  --text: #243028;
+  --muted: #6f7d72;
+  --primary: #6f8f72;
+  --primary-strong: #55755d;
+  --primary-soft: #edf5e9;
+  --border: rgba(91, 116, 94, 0.16);
+  --ok: #4f8062;
   --warn: #a26a12;
   --danger: #c25268;
-  --shadow: 0 16px 40px rgba(83, 64, 144, 0.08);
+  --shadow: 0 16px 40px rgba(76, 96, 79, 0.08);
 }
 
 page {
   min-height: 100%;
   background:
-    radial-gradient(circle at top left, rgba(194, 182, 255, 0.28), transparent 24%),
-    linear-gradient(180deg, #fbfaff 0%, #f7f7fc 52%, #f2f3fb 100%);
+    radial-gradient(circle at top left, rgba(190, 216, 179, 0.32), transparent 24%),
+    linear-gradient(180deg, #fbfdf9 0%, #f7faf5 52%, #f0f5ee 100%);
   color: var(--text);
   font-family: "Avenir Next", "PingFang SC", "Helvetica Neue", sans-serif;
 }

@@ -1,0 +1,220 @@
+.plan-manager {
+  padding: 14px;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background: #fbfdf9;
+}
+
+.plan-manager__head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.plan-manager__title {
+  display: block;
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.plan-manager__hint {
+  display: block;
+  margin-top: 4px;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.plan-manager__count {
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: var(--primary-soft);
+  color: var(--primary);
+  font-size: 11px;
+}
+
+.plan-manager__desc {
+  display: block;
+  margin-top: 12px;
+  padding: 10px 12px;
+  border: 1px solid rgba(109, 139, 112, 0.14);
+  border-radius: 12px;
+  background: rgba(109, 139, 112, 0.06);
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.plan-manager__composer {
+  margin-top: 12px;
+}
+
+.plan-manager__field-label {
+  display: block;
+  margin-bottom: 6px;
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.plan-manager__input {
+  width: 100%;
+  height: 44px;
+  padding: 0 12px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: #fff;
+  font-size: 13px;
+}
+
+.plan-manager__input input {
+  height: 44px;
+  line-height: 44px;
+  font-size: 13px;
+}
+
+.plan-manager__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.plan-manager__btn,
+.plan-manager__mini {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: auto;
+  margin: 0;
+  border-radius: 10px;
+  font-size: 11px;
+  line-height: 1.2;
+}
+
+.plan-manager__btn {
+  padding: 8px 12px;
+}
+
+.plan-manager__btn--primary {
+  background: var(--primary);
+  color: #fff;
+}
+
+.plan-manager__btn--secondary {
+  background: var(--primary-soft);
+  color: var(--text);
+}
+
+.plan-manager__list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.plan-manager__item {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  border: 1px solid rgba(91, 116, 94, 0.12);
+  border-radius: 12px;
+  background: #fff;
+}
+
+.plan-manager__item--active {
+  border-color: rgba(109, 139, 112, 0.24);
+  background: rgba(109, 139, 112, 0.08);
+}
+
+.plan-manager__item-main {
+  min-width: 0;
+}
+
+.plan-manager__item-name {
+  display: block;
+  font-size: 13px;
+  font-weight: 700;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.plan-manager__item-meta {
+  display: block;
+  margin-top: 4px;
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.plan-manager__item-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 6px;
+}
+
+.plan-manager__action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 48px;
+  height: 28px;
+  padding: 0 10px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.plan-manager__action--switch {
+  border: 1px solid rgba(109, 139, 112, 0.2);
+  background: #fff;
+  color: var(--text);
+}
+
+.plan-manager__action--danger {
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--danger);
+}
+
+.plan-manager__status {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 64px;
+  height: 28px;
+  padding: 0 10px;
+  border: 1px solid rgba(109, 139, 112, 0.2);
+  border-radius: 999px;
+  background: rgba(109, 139, 112, 0.1);
+  color: var(--primary);
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.plan-manager__status--muted {
+  color: var(--muted);
+}
+
+@media screen and (max-width: 760px) {
+  .plan-manager__head,
+  .plan-manager__item {
+    grid-template-columns: 1fr;
+  }
+
+  .plan-manager__head {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .plan-manager__item-actions {
+    justify-content: flex-start;
+  }
+}
