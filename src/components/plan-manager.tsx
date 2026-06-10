@@ -11,11 +11,15 @@ interface PlanManagerProps {
   activePlanName: string
   planNameDraft: string
   planOptions: PlanVariantSummary[]
+  lastBackupLabel: string
+  backupNeedsAttention: boolean
   onDraftChange: (value: string) => void
   onRenameCurrent: () => void
   onSaveAsNew: () => void
   onSwitchPlan: (planId: string) => void
   onDeletePlan: (planId: string) => void
+  onExportBackup: () => void
+  onImportBackup: () => void
 }
 
 export function PlanManager(props: PlanManagerProps) {
@@ -24,11 +28,15 @@ export function PlanManager(props: PlanManagerProps) {
     activePlanName,
     planNameDraft,
     planOptions,
+    lastBackupLabel,
+    backupNeedsAttention,
     onDraftChange,
     onRenameCurrent,
     onSaveAsNew,
     onSwitchPlan,
-    onDeletePlan
+    onDeletePlan,
+    onExportBackup,
+    onImportBackup
   } = props
 
   return (
@@ -59,6 +67,25 @@ export function PlanManager(props: PlanManagerProps) {
           </Button>
           <Button className='plan-manager__btn plan-manager__btn--primary' onClick={onSaveAsNew}>
             复制当前为新方案
+          </Button>
+        </View>
+      </View>
+
+      <View className='plan-manager__backup'>
+        <View>
+          <Text className='plan-manager__backup-title'>数据备份</Text>
+          <Text className='plan-manager__backup-copy'>导出 JSON 可在换浏览器或误操作后恢复全部方案。</Text>
+          <Text className={`plan-manager__backup-state ${backupNeedsAttention ? 'plan-manager__backup-state--warning' : ''}`}>
+            {backupNeedsAttention ? '当前数据有更新，建议导出备份' : '当前数据已备份'}
+            {lastBackupLabel ? ` · 上次备份：${lastBackupLabel}` : ' · 还没有导出过备份'}
+          </Text>
+        </View>
+        <View className='plan-manager__backup-actions'>
+          <Button className='plan-manager__btn plan-manager__btn--secondary' onClick={onImportBackup}>
+            导入恢复
+          </Button>
+          <Button className='plan-manager__btn plan-manager__btn--primary' onClick={onExportBackup}>
+            导出备份
           </Button>
         </View>
       </View>

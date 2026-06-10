@@ -20,6 +20,19 @@ const lodgingFilters: Array<{ key: LodgingFilter; label: string }> = [
   { key: 'no_hotel_needed', label: '不用安排酒店' }
 ]
 
+const lodgingExportModes: Array<{ key: LodgingExportMode; label: string; description: string }> = [
+  {
+    key: 'hotel',
+    label: '酒店版',
+    description: '按酒店和房型整理，可直接复制给酒店销售或前台核对。'
+  },
+  {
+    key: 'family',
+    label: '家人确认版',
+    description: '按宾客逐个列出安排，适合发给家人确认谁住哪里、住几晚。'
+  }
+]
+
 function readValue(event: { detail?: { value?: string } }) {
   return event.detail?.value ?? ''
 }
@@ -193,6 +206,7 @@ export default function LodgingPage() {
 
     return ['外地宾客住宿清单（给家人确认）', ...outOfTownGuests].join('\n')
   }, [exportMode, hotelGroups, plan.guests])
+  const exportModeDescription = lodgingExportModes.find((mode) => mode.key === exportMode)?.description ?? ''
 
   const persistPlan = (nextPlan: SavedPlan) => {
     setPlan(savePlan(nextPlan))
@@ -292,19 +306,17 @@ export default function LodgingPage() {
         <View className='preview-toggle'>
           <Text className='field__label'>导出用途</Text>
           <View className='preview-toggle__chips'>
-            <Button
-              className={`preview-toggle__chip ${exportMode === 'hotel' ? 'preview-toggle__chip--active' : ''}`}
-              onClick={() => setExportMode('hotel')}
-            >
-              给酒店
-            </Button>
-            <Button
-              className={`preview-toggle__chip ${exportMode === 'family' ? 'preview-toggle__chip--active' : ''}`}
-              onClick={() => setExportMode('family')}
-            >
-              给家人确认
-            </Button>
+            {lodgingExportModes.map((mode) => (
+              <Button
+                key={mode.key}
+                className={`preview-toggle__chip ${exportMode === mode.key ? 'preview-toggle__chip--active' : ''}`}
+                onClick={() => setExportMode(mode.key)}
+              >
+                {mode.label}
+              </Button>
+            ))}
           </View>
+          <Text className='export-mode-copy'>{exportModeDescription}</Text>
         </View>
 
         <View className='export-preview'>

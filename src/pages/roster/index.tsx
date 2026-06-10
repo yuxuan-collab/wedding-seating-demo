@@ -573,6 +573,8 @@ export default function RosterPage() {
                         <Text className='guest-desc'>{guest.group}</Text>
                       </View>
                     </View>
+                    <Text className='guest-status-cell'>正式</Text>
+                    <Text className='guest-group-cell'>{guest.group}</Text>
                     <View className='guest-actions'>
                       <Button className='mini-btn' onClick={() => startEditGuest(guest.id)}>
                         编辑
@@ -610,6 +612,8 @@ export default function RosterPage() {
                         <Text className='guest-desc'>{guest.group}</Text>
                       </View>
                     </View>
+                    <Text className='guest-status-cell'>候补</Text>
+                    <Text className='guest-group-cell'>{guest.group}</Text>
                     <View className='guest-actions'>
                       <Button className='mini-btn mini-btn--primary' onClick={() => restoreGuestFromWaitlist(guest.id)}>
                         转正式

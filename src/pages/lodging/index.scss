@@ -62,6 +62,17 @@
   margin-top: 12px;
 }
 
+.export-mode-copy {
+  display: block;
+  margin-top: 8px;
+  padding: 8px 10px;
+  border-radius: 12px;
+  background: rgba(109, 139, 112, 0.08);
+  color: var(--primary);
+  font-size: 11px;
+  line-height: 1.6;
+}
+
 .export-preview {
   margin-top: 12px;
   padding: 12px;
@@ -431,6 +442,10 @@
 }
 
 @media screen and (min-width: 900px) {
+  .summary-grid {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+  }
+
   .field-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
@@ -438,5 +453,31 @@
   .lodging-grid {
     grid-template-columns: minmax(360px, 0.92fr) minmax(0, 1.08fr);
     align-items: start;
+  }
+}
+
+@media screen and (min-width: 1200px) {
+  .lodging-export-panel {
+    display: grid;
+    grid-template-columns: minmax(280px, 0.75fr) minmax(0, 1.25fr);
+    align-items: start;
+    column-gap: 16px;
+  }
+
+  .lodging-export-panel .section-row {
+    grid-column: 1 / -1;
+  }
+
+  .export-preview {
+    margin-top: 12px;
+  }
+
+  .lodging-grid {
+    grid-template-columns: minmax(420px, 0.88fr) minmax(0, 1.12fr);
+  }
+
+  .lodging-guest-list,
+  .hotel-summary-list {
+    max-height: 560px;
   }
 }

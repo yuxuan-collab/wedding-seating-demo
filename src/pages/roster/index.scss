@@ -348,6 +348,11 @@
   font-size: 11px;
 }
 
+.guest-status-cell,
+.guest-group-cell {
+  display: none;
+}
+
 .guest-actions {
   display: flex;
   flex-wrap: nowrap;
@@ -589,19 +594,123 @@
   gap: 8px;
 }
 
-@media screen and (min-width: 1280px) {
+@media screen and (min-width: 900px) {
   .roster-grid {
-    grid-template-columns: minmax(340px, 0.9fr) minmax(0, 1.1fr);
+    grid-template-columns: minmax(320px, 0.82fr) minmax(0, 1.18fr);
+  }
+
+  .panel--composer {
+    position: sticky;
+    top: 16px;
+  }
+
+  .panel--list {
+    min-width: 0;
   }
 
   .panel--rules {
     grid-column: 1 / -1;
   }
+
+  .bulk-type-bar {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .bulk-type-bar__action {
+    margin-top: 0;
+    white-space: nowrap;
+  }
+
+  .bulk-type-bar__textarea {
+    grid-column: 1 / -1;
+  }
+
+  .bulk-type-bar__chips--stack {
+    margin-top: 0;
+  }
+
+  .guest-table {
+    max-height: 520px;
+  }
+
+  .guest-table__head {
+    display: grid;
+  }
+
+  .guest-table__head,
+  .guest-table__row {
+    grid-template-columns: minmax(120px, 1fr) 54px minmax(84px, 0.75fr) minmax(150px, auto);
+    align-items: center;
+  }
+
+  .guest-table__head text:nth-child(2),
+  .guest-table__head text:nth-child(3) {
+    display: inline-flex;
+  }
+
+  .guest-main {
+    justify-content: flex-start;
+  }
+
+  .guest-badges {
+    display: none;
+  }
+
+  .guest-status-cell,
+  .guest-group-cell {
+    display: inline-flex;
+    min-width: 0;
+    color: var(--muted);
+    font-size: 11px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .guest-status-cell {
+    width: fit-content;
+    padding: 4px 8px;
+    border-radius: 999px;
+    background: rgba(109, 139, 112, 0.1);
+    color: var(--primary);
+  }
+
+  .guest-actions {
+    justify-content: flex-end;
+    width: auto;
+  }
+
+  .mini-btn {
+    flex: 0 0 auto;
+    min-width: 44px;
+  }
+
+  .rule-board {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 }
 
-@media screen and (min-width: 1600px) {
+@media screen and (min-width: 1200px) {
   .list-columns {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .roster-grid {
+    grid-template-columns: minmax(360px, 0.72fr) minmax(0, 1.28fr);
+  }
+}
+
+@media screen and (min-width: 1500px) {
+  .roster-grid {
+    grid-template-columns: minmax(400px, 0.62fr) minmax(0, 1.38fr);
+  }
+
+  .rule-board {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 }
 

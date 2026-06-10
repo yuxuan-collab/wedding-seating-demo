@@ -15,6 +15,7 @@ import type {
 import { generateSeating } from './seating'
 
 export const storageKey = 'wedding-seating-demo-state'
+export const backupMetaKey = 'wedding-seating-demo-backup-meta'
 export const defaultGuestGroups: GuestGroup[] = [
   '男方朋友',
   '女方朋友',
@@ -22,6 +23,35 @@ export const defaultGuestGroups: GuestGroup[] = [
   '女方父母朋友'
 ]
 const defaultPlanName = '正式名单版'
+const backupSchema = 'wedding-seating-demo-backup'
+const backupVersion = 1
+
+interface WorkspaceBackupPayload {
+  schema: typeof backupSchema
+  version: number
+  exportedAt: string
+  data: StoredPlanWorkspace
+}
+
+interface WorkspaceBackupMeta {
+  lastExportedAt?: string
+}
+
+export interface WorkspaceBackupStatus {
+  lastExportedAt: string
+  latestUpdatedAt: string
+  needsBackup: boolean
+}
+
+export interface WorkspaceBackupPreview {
+  planCount: number
+  activePlanName: string
+  totalGuests: number
+  totalTables: number
+  totalRules: number
+  lodgingGuests: number
+  exportedAt: string
+}
 
 function normalizeGuestLodging(guest: Guest) {
   const isOutOfTown = guest.lodging?.isOutOfTown ?? false
@@ -134,11 +164,16 @@ export function getDefaultPlan(): SavedPlan {
   return buildPlan(demoTables, demoGuests, demoRules, defaultGuestGroups)
 }
 
-function createStoredPlanVariant(name: string, plan: SavedPlan, id: string = `plan-${Date.now()}`): StoredPlanVariant {
+function createStoredPlanVariant(
+  name: string,
+  plan: SavedPlan,
+  id: string = `plan-${Date.now()}`,
+  updatedAt: string = new Date().toISOString()
+): StoredPlanVariant {
   return {
     id,
     name: name.trim() || defaultPlanName,
-    updatedAt: new Date().toISOString(),
+    updatedAt,
     plan: normalizePlan(plan.tables, plan.guests, plan.rules, plan.groupOptions, plan.seating)
   }
 }
@@ -159,7 +194,8 @@ function normalizeStoredWorkspace(stored: StoredPlanWorkspace | SavedPlan): Stor
         createStoredPlanVariant(
           variant.name ?? `方案 ${index + 1}`,
           variant.plan ?? getDefaultPlan(),
-          variant.id ?? `plan-${index + 1}`
+          variant.id ?? `plan-${index + 1}`,
+          variant.updatedAt ?? new Date().toISOString()
         )
       )
       .filter(Boolean)
@@ -188,6 +224,57 @@ function saveWorkspace(workspace: StoredPlanWorkspace) {
   return workspace
 }
 
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return Boolean(value && typeof value === 'object')
+}
+
+function isWorkspaceLike(value: unknown): value is StoredPlanWorkspace {
+  return isRecord(value) && Array.isArray(value.plans)
+}
+
+function isLegacyPlanLike(value: unknown): value is SavedPlan {
+  return (
+    isRecord(value) &&
+    Array.isArray(value.tables) &&
+    Array.isArray(value.guests) &&
+    Array.isArray(value.rules) &&
+    isRecord(value.seating)
+  )
+}
+
+function getCandidateBackupData(payload: unknown) {
+  return isRecord(payload) && payload.schema === backupSchema ? payload.data : payload
+}
+
+function getCandidateExportedAt(payload: unknown) {
+  return isRecord(payload) && typeof payload.exportedAt === 'string' ? payload.exportedAt : ''
+}
+
+function getLatestWorkspaceUpdatedAt(workspace: StoredPlanWorkspace) {
+  return workspace.plans.reduce((latest, variant) => {
+    const time = new Date(variant.updatedAt).getTime()
+    const latestTime = new Date(latest).getTime()
+
+    return Number.isFinite(time) && time > latestTime ? variant.updatedAt : latest
+  }, workspace.plans[0]?.updatedAt ?? new Date().toISOString())
+}
+
+function loadBackupMeta(): WorkspaceBackupMeta {
+  try {
+    const stored = Taro.getStorageSync(backupMetaKey) as WorkspaceBackupMeta | ''
+    return stored && typeof stored === 'object' ? stored : {}
+  } catch {
+    return {}
+  }
+}
+
+function isAfter(left: string, right: string) {
+  const leftTime = new Date(left).getTime()
+  const rightTime = new Date(right).getTime()
+
+  return Number.isFinite(leftTime) && Number.isFinite(rightTime) && leftTime > rightTime
+}
+
 export function loadWorkspace(): StoredPlanWorkspace {
   try {
     const stored = Taro.getStorageSync(storageKey) as StoredPlanWorkspace | SavedPlan | ''
@@ -201,6 +288,80 @@ export function loadWorkspace(): StoredPlanWorkspace {
   } catch {
     return getDefaultWorkspace()
   }
+}
+
+export function createWorkspaceBackup(): WorkspaceBackupPayload {
+  return {
+    schema: backupSchema,
+    version: backupVersion,
+    exportedAt: new Date().toISOString(),
+    data: loadWorkspace()
+  }
+}
+
+export function createWorkspaceBackupFileName() {
+  const timestamp = new Date().toISOString().slice(0, 19).replace(/[-:T]/g, '')
+  return `wedding-seating-backup-${timestamp}.json`
+}
+
+export function getWorkspaceBackupStatus(): WorkspaceBackupStatus {
+  const workspace = loadWorkspace()
+  const latestUpdatedAt = getLatestWorkspaceUpdatedAt(workspace)
+  const lastExportedAt = loadBackupMeta().lastExportedAt ?? ''
+
+  return {
+    lastExportedAt,
+    latestUpdatedAt,
+    needsBackup: !lastExportedAt || isAfter(latestUpdatedAt, lastExportedAt)
+  }
+}
+
+export function markWorkspaceBackedUp(exportedAt: string = new Date().toISOString()): WorkspaceBackupStatus {
+  Taro.setStorageSync(backupMetaKey, { lastExportedAt: exportedAt })
+  return getWorkspaceBackupStatus()
+}
+
+export function previewWorkspaceBackup(payload: unknown): WorkspaceBackupPreview {
+  const candidate = getCandidateBackupData(payload)
+
+  if (!isWorkspaceLike(candidate) && !isLegacyPlanLike(candidate)) {
+    throw new Error('无法识别备份文件')
+  }
+
+  const workspace = normalizeStoredWorkspace(candidate)
+  const activeVariant = getActiveVariant(workspace)
+
+  return workspace.plans.reduce<WorkspaceBackupPreview>(
+    (preview, variant) => ({
+      ...preview,
+      totalGuests: preview.totalGuests + variant.plan.guests.length,
+      totalTables: preview.totalTables + variant.plan.tables.length,
+      totalRules: preview.totalRules + variant.plan.rules.length,
+      lodgingGuests: preview.lodgingGuests + variant.plan.guests.filter((guest) => guest.lodging?.isOutOfTown).length
+    }),
+    {
+      planCount: workspace.plans.length,
+      activePlanName: activeVariant.name,
+      totalGuests: 0,
+      totalTables: 0,
+      totalRules: 0,
+      lodgingGuests: 0,
+      exportedAt: getCandidateExportedAt(payload)
+    }
+  )
+}
+
+export function restoreWorkspaceFromBackup(payload: unknown): PlannerStateSnapshot {
+  const candidate = getCandidateBackupData(payload)
+
+  if (!isWorkspaceLike(candidate) && !isLegacyPlanLike(candidate)) {
+    throw new Error('无法识别备份文件')
+  }
+
+  const workspace = normalizeStoredWorkspace(candidate)
+  saveWorkspace(workspace)
+  markWorkspaceBackedUp(getCandidateExportedAt(payload) || getLatestWorkspaceUpdatedAt(workspace))
+  return buildPlannerStateSnapshot(workspace)
 }
 
 function getActiveVariant(workspace: StoredPlanWorkspace) {

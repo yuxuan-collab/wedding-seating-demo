@@ -4,27 +4,59 @@ import Taro from '@tarojs/taro'
 import { PlanManager } from '../../components/plan-manager'
 import { TopNav } from '../../components/top-nav'
 import { navigatePage } from '../../utils/navigation'
-import { deletePlanVariant, loadPlannerState, renameActivePlan, savePlanAsVariant, switchActivePlan } from '../../utils/plan'
+import {
+  createWorkspaceBackup,
+  createWorkspaceBackupFileName,
+  deletePlanVariant,
+  getWorkspaceBackupStatus,
+  loadPlannerState,
+  markWorkspaceBackedUp,
+  previewWorkspaceBackup,
+  renameActivePlan,
+  restoreWorkspaceFromBackup,
+  savePlanAsVariant,
+  switchActivePlan
+} from '../../utils/plan'
 import './index.scss'
+
+function formatBackupTime(value: string) {
+  if (!value) {
+    return ''
+  }
+
+  const date = new Date(value)
+
+  if (Number.isNaN(date.getTime())) {
+    return ''
+  }
+
+  const pad = (nextValue: number) => String(nextValue).padStart(2, '0')
+
+  return `${date.getMonth() + 1}/${date.getDate()} ${pad(date.getHours())}:${pad(date.getMinutes())}`
+}
 
 export default function HomePage() {
   const [plannerState, setPlannerState] = useState(() => loadPlannerState())
+  const [backupStatus, setBackupStatus] = useState(() => getWorkspaceBackupStatus())
   const [planNameDraft, setPlanNameDraft] = useState(plannerState.activePlanName)
   const { plan, activePlanId, activePlanName, planOptions } = plannerState
   const confirmedGuests = plan.guests.filter((guest) => guest.status !== 'waitlist')
   const waitlistGuests = plan.guests.filter((guest) => guest.status === 'waitlist')
   const outOfTownGuests = plan.guests.filter((guest) => guest.lodging?.isOutOfTown)
   const seatedCount = Object.values(plan.seating.tables).reduce((sum, guestIds) => sum + guestIds.length, 0)
+  const shouldShowRecoveryCta = plan.guests.length === 0
 
   useEffect(() => {
     const nextState = loadPlannerState()
     setPlannerState(nextState)
     setPlanNameDraft(nextState.activePlanName)
+    setBackupStatus(getWorkspaceBackupStatus())
   }, [])
 
   const syncPlannerState = (nextState = loadPlannerState()) => {
     setPlannerState(nextState)
     setPlanNameDraft(nextState.activePlanName)
+    setBackupStatus(getWorkspaceBackupStatus())
   }
 
   const handleRenameCurrent = () => {
@@ -59,6 +91,88 @@ export default function HomePage() {
 
     syncPlannerState(deletePlanVariant(planId))
     Taro.showToast({ title: '已删除方案', icon: 'success' })
+  }
+
+  const handleExportBackup = () => {
+    const backup = createWorkspaceBackup()
+    const backupText = JSON.stringify(backup, null, 2)
+    const fileName = createWorkspaceBackupFileName()
+
+    if (typeof document === 'undefined') {
+      Taro.setClipboardData({ data: backupText })
+      setBackupStatus(markWorkspaceBackedUp(backup.exportedAt))
+      Taro.showToast({ title: '已复制备份内容', icon: 'success' })
+      return
+    }
+
+    const blob = new Blob([backupText], { type: 'application/json;charset=utf-8' })
+    const url = window.URL.createObjectURL(blob)
+    const link = document.createElement('a')
+
+    link.href = url
+    link.download = fileName
+    link.click()
+    window.URL.revokeObjectURL(url)
+    setBackupStatus(markWorkspaceBackedUp(backup.exportedAt))
+    Taro.showToast({ title: '已导出备份', icon: 'success' })
+  }
+
+  const restoreBackupText = async (backupText: string) => {
+    try {
+      const payload = JSON.parse(backupText)
+      const preview = previewWorkspaceBackup(payload)
+      const result = await Taro.showModal({
+        title: '确认导入备份？',
+        content: [
+          `包含 ${preview.planCount} 套方案`,
+          `共 ${preview.totalGuests} 位宾客 / ${preview.totalTables} 张桌`,
+          `同桌规则 ${preview.totalRules} 组 / 外地宾客 ${preview.lodgingGuests} 位`,
+          `导入后会覆盖当前数据。`
+        ].join('\n'),
+        confirmText: '导入恢复',
+        cancelText: '取消'
+      })
+
+      if (!result.confirm) {
+        return
+      }
+
+      syncPlannerState(restoreWorkspaceFromBackup(payload))
+      setBackupStatus(getWorkspaceBackupStatus())
+      Taro.showToast({ title: '已恢复备份', icon: 'success' })
+    } catch {
+      Taro.showToast({ title: '备份文件无法识别', icon: 'none' })
+    }
+  }
+
+  const handleImportBackup = () => {
+    if (typeof document === 'undefined') {
+      Taro.showToast({ title: '当前环境暂不支持文件导入', icon: 'none' })
+      return
+    }
+
+    const input = document.createElement('input')
+
+    input.type = 'file'
+    input.accept = 'application/json,.json'
+    input.onchange = () => {
+      const file = input.files?.[0]
+
+      if (!file) {
+        return
+      }
+
+      const reader = new FileReader()
+      reader.onload = () => {
+        restoreBackupText(String(reader.result ?? ''))
+      }
+      reader.onerror = () => {
+        Taro.showToast({ title: '读取备份失败', icon: 'none' })
+      }
+      reader.readAsText(file)
+    }
+
+    input.click()
   }
 
   return (
@@ -107,16 +221,31 @@ export default function HomePage() {
       </View>
 
       <View className='home-panels'>
+        {shouldShowRecoveryCta && (
+          <View className='home-recovery'>
+            <View>
+              <Text className='home-recovery__title'>当前没有宾客数据</Text>
+              <Text className='home-recovery__copy'>如果你之前导出过备份，可以直接导入 JSON 恢复名单、住宿和排座。</Text>
+            </View>
+            <Button className='home-recovery__button' onClick={handleImportBackup}>
+              导入备份恢复
+            </Button>
+          </View>
+        )}
         <PlanManager
           activePlanId={activePlanId}
           activePlanName={activePlanName}
           planNameDraft={planNameDraft}
           planOptions={planOptions}
+          lastBackupLabel={formatBackupTime(backupStatus.lastExportedAt)}
+          backupNeedsAttention={backupStatus.needsBackup}
           onDraftChange={setPlanNameDraft}
           onRenameCurrent={handleRenameCurrent}
           onSaveAsNew={handleSaveAsNew}
           onSwitchPlan={handleSwitchPlan}
           onDeletePlan={handleDeletePlan}
+          onExportBackup={handleExportBackup}
+          onImportBackup={handleImportBackup}
         />
         <View className='home-panel'>
           <Text className='panel-label'>名单页</Text>
